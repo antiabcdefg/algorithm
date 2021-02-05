@@ -1,0 +1,1191 @@
+[1,2,3,4,5,6]
+前序 中左右 [1,2,4,5,3,6]
+中序 左中右 [4,2,5,1,3,6]
+后续 左右中 [4,5,2,6,3,1]    如果当前节点要做的事情需要通过左右子树的计算结果推导出来，就要用到后序遍历。
+层序 [1,2,3,4,5,6]
+
+104. 二叉树的最大深度
+class Solution {
+    public int maxDepth(TreeNode root) {
+        return root==null?0:Math.max(maxDepth(root.left),maxDepth(root.right))+1;
+    }
+}
+
+class Solution {
+    public int maxDepth(TreeNode root) {
+        if(root==null) return 0;
+        int res=0;
+        Queue<TreeNode> q=new LinkedList<>();
+        q.offer(root);
+        while(!q.isEmpty()){
+            for(int i=q.size();i>0;i--){
+                TreeNode cur=q.poll();
+                if(cur.left!=null) q.offer(cur.left);
+                if(cur.right!=null) q.offer(cur.right);
+            }
+            res++;
+        }
+        return res;
+    }
+}
+
+111. 二叉树的最小深度
+class Solution {
+    public int minDepth(TreeNode root) {
+        if(root==null) return 0;
+        int l=minDepth(root.left);
+        int r=minDepth(root.right);
+        return l==0||r==0?l+r+1:Math.min(l,r)+1;
+    }
+}
+
+class Solution {
+    public int minDepth(TreeNode root) {
+        if(root==null) return 0;
+        int res=1;
+        Queue<TreeNode> q=new LinkedList<>();
+        q.offer(root);
+        while(!q.isEmpty()){
+            for(int i=q.size();i>0;i--){
+                TreeNode cur=q.poll();
+                if(cur.left==null&&cur.right==null) return res;
+                if(cur.left!=null) q.offer(cur.left);
+                if(cur.right!=null) q.offer(cur.right);
+            }
+            res++;
+        }
+        return res;
+    }
+}
+
+617. 合并二叉树
+class Solution {
+    public TreeNode mergeTrees(TreeNode t1, TreeNode t2) {
+        if(t1==null) return t2;
+        if(t2==null) return t1;
+        t1.val+=t2.val;
+        t1.left=mergeTrees(t1.left,t2.left);
+        t1.right=mergeTrees(t1.right,t2.right);
+        return t1;
+    }
+}
+
+110. 平衡二叉树
+class Solution {
+    public int height(TreeNode root) {
+        return root==null?-1:Math.max(height(root.left),height(root.right))+1;
+    }
+    public boolean isBalanced(TreeNode root) {
+        if(root==null) return true;
+        if(Math.abs(height(root.left)-height(root.right))>1) return false;
+        return isBalanced(root.left)&&isBalanced(root.right);
+    }
+}
+
+class Solution {
+    public boolean isBalanced(TreeNode root) {
+        return dfs(root)!=-1;
+    }
+    public int dfs(TreeNode root){
+        if(root==null) return 0;
+        int l=dfs(root.left),r=dfs(root.right);
+        if(l==-1||r==-1||Math.abs(l-r)>1) return -1;
+        return Math.max(l,r)+1;
+    }
+}
+
+543. 二叉树的直径
+class Solution {
+    public int res=0;
+    public int diameterOfBinaryTree(TreeNode root) {
+        dfs(root);
+        return res;
+    }
+    public int dfs(TreeNode root){
+        if(root==null) return 0;
+        int l=dfs(root.left);
+        int r=dfs(root.right);
+        res=Math.max(res,l+r);
+        return Math.max(l,r)+1;
+    }
+}
+
+671. 二叉树中第二小的节点
+class Solution {
+    public int findSecondMinimumValue(TreeNode root) {
+        if(root==null||root.left==null&&root.right==null) return -1;
+        int left=root.left.val,right=root.right.val;
+        if(left==root.val) left=findSecondMinimumValue(root.left);
+        if(right==root.val) right=findSecondMinimumValue(root.right);
+        if(left!=-1&&right!=-1) return Math.min(left,right);
+        else if(left==-1) return right;
+        else return left;
+    }
+}
+
+404. 左叶子之和
+class Solution {
+    int sum=0;
+    public int sumOfLeftLeaves(TreeNode root) {
+        if(root==null) return 0;
+        if(root.left!=null&&root.left.left==null&&root.left.right==null) sum+=root.left.val;
+        sumOfLeftLeaves(root.left);
+        sumOfLeftLeaves(root.right);
+        return sum;
+    }
+}
+
+513. 找树左下角的值
+class Solution {
+    int res=0,depth=-1;
+    public int findBottomLeftValue(TreeNode root) {
+        dfs(root,0);
+        return res;
+    }
+    public void dfs(TreeNode root,int level){
+        if(root==null) return;
+        if(root.left==null&&root.right==null){
+            if(level>depth){
+                res=root.val;
+                depth=level;
+            }
+            return;
+        }
+        dfs(root.left,level+1);
+        dfs(root.right,level+1);
+        return;
+    }
+}
+
+class Solution {
+    public int findBottomLeftValue(TreeNode root) {
+        TreeNode cur=root;
+        Queue<TreeNode> q=new LinkedList<>();
+        if(root!=null) q.offer(root);
+        while(!q.isEmpty()){
+            for(int i=q.size();i>0;i--){
+                cur=q.poll();
+                if(cur.right!=null) q.offer(cur.right);
+                if(cur.left!=null) q.offer(cur.left);
+            }
+        }
+        return cur.val;
+    }
+}
+
+257. 二叉树的所有路径
+class Solution {
+    List<String> res=new ArrayList<>();
+    public List<String> binaryTreePaths(TreeNode root) {
+        if(root==null) return res;
+        dfs(root,"");
+        return res;
+    }
+    public void dfs(TreeNode root,String s){
+        if(root.left==null&&root.right==null){
+            res.add(s+root.val);
+            return;
+        }
+        if(root.left!=null) dfs(root.left,s+root.val+"->");
+        if(root.right!=null) dfs(root.right,s+root.val+"->");
+    }
+}
+
+class Solution {
+    public List<String> binaryTreePaths(TreeNode root) {
+        List<String> res=new ArrayList<>();
+        if(root==null) return res;
+        Queue<Object> q=new LinkedList<>();
+        q.offer(root);
+        q.offer(root.val+"");
+        while(!q.isEmpty()){
+            TreeNode node=(TreeNode)q.poll();
+            String s=(String)q.poll();
+            if(node.left==null&&node.right==null) res.add(s);
+            if(node.right!=null){
+                q.offer(node.right);
+                q.offer(s+"->"+node.right.val);
+            }
+            if(node.left!=null){
+                q.offer(node.left);
+                q.offer(s+"->"+node.left.val);
+            }
+        }
+        return res;
+    }
+}
+
+100. 相同的树
+class Solution {
+    public boolean isSameTree(TreeNode p, TreeNode q) {
+        if (p==null&&q==null) return true;
+        if (p==null||q==null) return false;
+        if(p.val!=q.val) return false;
+        return isSameTree(p.left,q.left)&&isSameTree(p.right,q.right);
+    }
+}
+
+101. 对称二叉树
+class Solution {
+    public boolean isSymmetric(TreeNode root) {
+        if(root==null) return true;
+        return dfs(root.left,root.right);
+    }
+    public boolean dfs(TreeNode l,TreeNode r){
+        if(l==null&&r==null) return true;
+        if(l==null||r==null) return false;
+        if(l.val==r.val) return dfs(l.left,r.right)&&dfs(l.right,r.left);
+        return false;
+    }
+}
+
+class Solution {
+    public boolean isSymmetric(TreeNode root) {
+        if(root==null) return true;
+        Queue<TreeNode> q=new LinkedList<>();
+        q.offer(root.left);
+        q.offer(root.right);
+        while(!q.isEmpty()){
+            TreeNode l=q.poll();
+            TreeNode r=q.poll();
+
+            if(l==null&&r==null) continue;
+            if(l==null||r==null||l.val!=r.val) return false;
+            q.offer(l.left);
+            q.offer(r.right);
+            q.offer(l.right);
+            q.offer(r.left);
+        }
+        return true;
+    }
+}
+
+572. 另一个树的子树
+class Solution {
+    public boolean isSubtree(TreeNode s, TreeNode t) {
+        if(s==null) return false;
+        if(t==null) return true;
+        return isSubtree(s.left,t)||isSubtree(s.right,t)||isSameTree(s,t);
+    }
+    public boolean isSameTree(TreeNode s, TreeNode t){
+        if(s==null&&t==null) return true;
+        if(s==null||t==null) return false;
+        if(s.val!=t.val) return false;
+        return isSameTree(s.left,t.left)&&isSameTree(s.right,t.right);
+    }
+}
+
+226. 翻转二叉树
+//前序遍历
+class Solution {
+    public TreeNode invertTree(TreeNode root) {
+        if(root==null) return null;
+        TreeNode left=invertTree(root.left);
+        root.left=invertTree(root.right);
+        root.right=left;
+        return root;
+    }
+}
+
+//后序遍历
+class Solution {
+    public TreeNode invertTree(TreeNode root) {
+        if(root==null) return null;
+        invertTree(root.left);
+        invertTree(root.right);
+        TreeNode left=root.left;
+        root.left=root.right;
+        root.right=left;
+        return root;
+    }
+}
+
+//层次遍历
+class Solution {
+    public TreeNode invertTree(TreeNode root) {
+        if(root==null) return null;
+        Queue<TreeNode> q=new LinkedList<>();
+        q.offer(root);
+        while(!q.isEmpty()){
+            for(int i=q.size();i>0;i--){
+                TreeNode cur=q.poll();
+                TreeNode left=cur.left;
+                cur.left=cur.right;
+                cur.right=left;
+                if(cur.left!=null) q.offer(cur.left);
+                if(cur.right!=null) q.offer(cur.right);
+            }
+        }
+        return root;
+    }
+}
+
+114. 二叉树展开为链表
+class Solution {
+    public void flatten(TreeNode root) {
+        if(root==null) return;
+        flatten(root.left);//后序遍历
+        flatten(root.right);
+
+        TreeNode r=root.right;
+        TreeNode l=root.left;
+        root.left=null;
+        root.right=l;
+        TreeNode dummy=root;
+        while(dummy.right!=null) dummy=dummy.right;
+        dummy.right=r;
+    }
+}
+
+class Solution {
+    public void flatten(TreeNode root) {
+        TreeNode dummy=root;
+        while(dummy!=null){
+            if(dummy.left!=null){
+                TreeNode node=dummy.left;
+                while(node.right!=null) node=node.right;
+                node.right=dummy.right;
+                dummy.right=dummy.left;
+                dummy.left=null;
+            }
+            dummy=dummy.right;
+        }
+    }
+}
+
+116. 填充每个节点的下一个右侧节点指针
+class Solution {
+    public Node connect(Node root) {
+        if(root==null) return root;
+        dfs(root.left,root.right);
+        return root;
+    }
+    public void dfs(Node left,Node right){
+        if(left==null) return;
+        left.next=right;
+        dfs(left.left,left.right);
+        dfs(right.left,right.right);
+        dfs(left.right,right.left);
+    }
+}
+
+class Solution {
+    public Node connect(Node root) {
+        if(root==null) return root;
+        Node left=root.left,right=root.right;
+        while(left!=null){
+            left.next=right;
+            left=left.right;
+            right=right.left;
+        }
+        connect(root.left);
+        connect(root.right);
+        return root;
+    }
+}
+
+class Solution {
+    public Node connect(Node root) {
+        Queue<Node> q=new LinkedList<>();
+        if(root!=null) q.offer(root);
+        while(!q.isEmpty()){
+            Node prev=null;
+            for(int i=q.size();i>0;i--){
+                Node cur=q.poll();
+                if(prev!=null) prev.next=cur;
+                prev=cur;
+                if(cur.left!=null) q.offer(cur.left);
+                if(cur.right!=null) q.offer(cur.right);
+            }
+        }
+        return root;
+    }
+}
+
+117. 填充每个节点的下一个右侧节点指针 II
+class Solution {
+    public Node connect(Node root) {
+        if(root==null) return root;
+        Node cur=root;
+        while(cur!=null){
+            Node dummy=new Node(),tail=dummy;
+            while(cur!=null){
+                if(cur.left!=null){
+                    tail.next=cur.left;
+                    tail=tail.next;
+                }
+                if(cur.right!=null){
+                    tail.next=cur.right;
+                    tail=tail.next;
+                }
+                cur=cur.next;
+            }
+            cur=dummy.next;
+        }
+        return root;
+    }
+}
+
+366. 寻找完全二叉树的叶子节点
+class Solution {
+    List<List<Integer>> res=new ArrayList<>();
+    public ArrayList<ArrayList<Integer>> findLeaves(TreeNode root) {
+        dfs(root);
+        return res;
+    }
+    public int dfs(TreeNode root){
+        if (root==null) return -1;
+        int depth=Math.max(dfs(root.left), dfs(root.right))+1;
+        if(res.size()<=depth) res.add(new ArrayList<Integer>());
+        res.get(depth).add(root.val);
+        return depth;
+    }
+}
+
+144. 二叉树的前序遍历
+class Solution {
+    List<Integer> res=new ArrayList<>();
+    public List<Integer> preorderTraversal(TreeNode root) {
+        preOrder(root);
+        return res;
+    }
+    public void preOrder(TreeNode root){
+        if(root==null) return;
+        res.add(root.val);
+        preOrder(root.left);
+        preOrder(root.right);
+    }
+}
+
+class Solution {
+    public List<Integer> preorderTraversal(TreeNode root) {
+        List<Integer> res=new ArrayList<>();
+        if(root==null) return res;
+        Stack<TreeNode> stk=new Stack<>();
+        stk.push(root);
+        while(!stk.isEmpty()){
+            TreeNode cur=stk.pop();
+            res.add(cur.val);
+            if(cur.right!=null) stk.push(cur.right);
+            if(cur.left!=null) stk.push(cur.left);
+        }
+        return res;
+    }
+}
+
+class Solution {
+    public List<Integer> preorderTraversal(TreeNode root) {
+        List<Integer> res=new ArrayList<>();
+        if(root==null) return res;
+        Stack<TreeNode> stk=new Stack<>();
+        stk.push(root);
+        while(!stk.isEmpty()){
+            while(root!=null){
+                stk.push(root);
+                res.add(root.val);
+                root=root.left;
+            }
+            root=stk.pop().right;
+        }
+        return res;
+    }
+}
+
+94. 二叉树的中序遍历
+class Solution {
+    List<Integer> res=new ArrayList<>();
+    public List<Integer> inorderTraversal(TreeNode root) {
+        inOrder(root);
+        return res;
+    }
+    public void inOrder(TreeNode root){
+        if(root==null) return;
+        inOrder(root.left);
+        res.add(root.val);
+        inOrder(root.right);
+    }
+}
+
+class Solution {
+    public List<Integer> inorderTraversal(TreeNode root) {
+        List<Integer> res=new ArrayList<>();
+        if(root==null) return res;
+        Stack<TreeNode> stk=new Stack<>();
+        TreeNode cur=root;
+        while(!stk.isEmpty()||cur!=null){
+            while(cur!=null){
+                stk.push(cur);
+                cur=cur.left;
+            }
+            cur=stk.pop();
+            res.add(cur.val);
+            cur=cur.right;
+        }
+        return res;
+    }
+}
+
+145. 二叉树的后序遍历
+class Solution {
+    List<Integer> res=new ArrayList<>();
+    public List<Integer> postorderTraversal(TreeNode root) {
+        postOrder(root);
+        return res;
+    }
+    public void postOrder(TreeNode root){
+        if(root==null) return;
+        postOrder(root.left);
+        postOrder(root.right);
+        res.add(root.val);
+    }
+}
+
+class Solution {
+    public List<Integer> postorderTraversal(TreeNode root) {
+        List<Integer> res=new ArrayList<>();
+        if(root==null) return res;
+        Stack<TreeNode> stk=new Stack<>();
+        stk.push(root);
+        while(!stk.isEmpty()){
+            TreeNode cur=stk.pop();
+            res.add(cur.val);
+            if(cur.left!=null) stk.push(cur.left);
+            if(cur.right!=null) stk.push(cur.right);
+        }
+        Collections.reverse(res);
+        return res;
+    }
+}
+
+class Solution {
+    public List<Integer> postorderTraversal(TreeNode root) {
+        List<Integer> res=new ArrayList<>();
+        if(root==null) return res;
+        Stack<TreeNode> stk=new Stack<>();
+        Stack<TreeNode> stk2=new Stack<>();
+        stk.push(root);
+        while(!stk.isEmpty()){
+            TreeNode cur=stk.pop();
+            stk2.push(cur);
+            if(cur.left!=null) stk.push(cur.left);
+            if(cur.right!=null) stk.push(cur.right);
+        }
+        while(!stk2.isEmpty()) res.add(stk2.pop().val);
+        return res;
+    }
+}
+
+
+前
+class Solution {
+    public List<Integer> preorderTraversal(TreeNode root) {
+        List<Integer> res=new ArrayList<>();
+        Stack<TreeNode> stk=new Stack<>();
+        while(root!=null||!stk.isEmpty()){
+            if(root!=null){
+                res.add(root.val);
+                stk.push(root);
+                root=root.left;
+            }else{
+                TreeNode cur=stk.pop();
+                root=cur.right;
+            }
+        }
+        return res;
+    }
+}
+中
+class Solution {
+    public List<Integer> inorderTraversal(TreeNode root) {
+        List<Integer> res=new ArrayList<>();
+        Stack<TreeNode> stk=new Stack<>();
+        while(root!=null||!stk.isEmpty()){
+            if(root!=null){
+                stk.push(root);
+                root=root.left;
+            }else{
+                TreeNode cur=stk.pop();
+                res.add(cur.val);
+                root=cur.right;
+            }
+        }
+        return res;
+    }
+}
+后
+class Solution {
+    public List<Integer> postorderTraversal(TreeNode root) {
+        List<Integer> res=new ArrayList<>();
+        Stack<TreeNode> stk=new Stack<>();
+        while(root!=null||!stk.isEmpty()){
+            if(root!=null){
+                stk.push(root);
+                res.add(0,root.val);
+                root=root.right;
+            }else{
+                TreeNode cur=stk.pop();
+                root=cur.left;
+            }
+        }
+        return res;
+    }
+}
+
+//https://leetcode-cn.com/problems/binary-tree-preorder-traversal/solution/leetcodesuan-fa-xiu-lian-dong-hua-yan-shi-xbian-2/
+Morris遍历
+O(n) O(1)
+以某个根结点开始，找到它左子树的最右侧节点之后与当前根结点进行连接
+前
+class Solution {
+    public List<Integer> preorderTraversal(TreeNode root) {
+        List<Integer> res=new ArrayList<>();
+        if(root==null) return res;
+        TreeNode cur=root,mostRight;
+        while(cur!=null){
+            mostRight=cur.left;
+            if(mostRight!=null){
+                while(mostRight.right!=null&&mostRight.right!=cur) mostRight=mostRight.right;
+                if(mostRight.right==null){
+                    mostRight.right=cur;
+                    res.add(cur.val);
+                    cur=cur.left;
+                    continue;
+                }else mostRight.right=null;
+            }else res.add(cur.val);
+            cur=cur.right;
+        }
+        return res;
+    }
+}
+中
+class Solution {
+    public List<Integer> inorderTraversal(TreeNode root) {
+        List<Integer> res=new ArrayList<>();
+        if(root==null) return res;
+        TreeNode cur=root,mostRight;
+        while(cur!=null){
+            mostRight=cur.left;
+            if(mostRight!=null){
+                while(mostRight.right!=null&&mostRight.right!=cur) mostRight=mostRight.right;
+                if(mostRight.right==null){
+                    mostRight.right=cur;
+                    cur=cur.left;
+                    continue;
+                }else mostRight.right=null;
+            }
+            res.add(cur.val);
+            cur=cur.right;
+        }
+        return res;
+    }
+}
+后
+
+
+
+102. 二叉树的层序遍历
+class Solution {
+    List<List<Integer>> res=new ArrayList<>();
+    public List<List<Integer>> levelOrder(TreeNode root) {
+        if(root==null) return Arrays.asList();
+        levOrder(root,0);
+        return res;
+    }
+    public void levOrder(TreeNode root,int level){
+        if(root==null) return;
+        if(res.size()==level) res.add(new ArrayList<>());
+        List<Integer> cur=res.get(level);
+        cur.add(root.val);
+
+        levOrder(root.left,level+1);
+        levOrder(root.right,level+1);
+    }
+}
+
+class Solution {
+    public List<List<Integer>> levelOrder(TreeNode root) {
+        List<List<Integer>> res=new ArrayList<>();
+        if(root==null) return Arrays.asList();
+        Queue<TreeNode> q=new LinkedList<>();
+        q.offer(root);
+        while(!q.isEmpty()){
+            List<Integer> list=new ArrayList<>();
+            for(int i=q.size();i>0;i--){
+                TreeNode cur=q.poll();
+                list.add(cur.val);
+                if(cur.left!=null) q.offer(cur.left);
+                if(cur.right!=null) q.offer(cur.right);
+            }
+            res.add(list);
+        }
+        return res;
+    }
+}
+
+103. 二叉树的锯齿形层序遍历
+class Solution {
+    public List<List<Integer>> zigzagLevelOrder(TreeNode root) {
+        List<List<Integer>> res=new ArrayList<>();
+        if(root==null) return Arrays.asList();
+        Queue<TreeNode> q=new LinkedList<>();
+        q.offer(root);
+        while(!q.isEmpty()){
+            List<Integer> list=new ArrayList<>();
+            for(int i=q.size();i>0;i--){
+                TreeNode cur=q.poll();
+                list.add(cur.val);
+                if(cur.left!=null) q.offer(cur.left);
+                if(cur.right!=null) q.offer(cur.right);
+            }
+            if(res.size()%2==1) Collections.reverse(list);
+            res.add(list);
+        }
+        return res;
+    }
+}
+
+297. 二叉树的序列化与反序列化
+前序遍历
+public class Codec {
+    public String SEP = ",";
+    public String NULL = "null";
+    public String serialize(TreeNode root) {
+        StringBuilder sb=new StringBuilder();
+        serialize(root, sb);
+        return sb.toString();
+    }
+    public void serialize(TreeNode root, StringBuilder sb) {
+        if(root==null){
+            sb.append(NULL).append(SEP);
+            return;
+        }
+        sb.append(root.val).append(SEP);
+        serialize(root.left,sb);
+        serialize(root.right,sb);
+    }
+    public TreeNode deserialize(String data) {
+        LinkedList<String> nodes=new LinkedList<>();
+        for (String s:data.split(SEP)) {
+            nodes.add(s);
+        }
+        return deserialize(nodes);
+    }
+    public TreeNode deserialize(LinkedList<String> nodes) {
+        if(nodes.isEmpty()) return null;
+        String cur=nodes.removeFirst();
+        if(cur.equals(NULL)) return null;
+        TreeNode root=new TreeNode(Integer.parseInt(cur));
+        root.left=deserialize(nodes);
+        root.right=deserialize(nodes);
+        return root;
+    }
+}
+
+后序遍历
+public class Codec {
+    public String SEP = ",";
+    public String NULL = "null";
+    public String serialize(TreeNode root) {
+        StringBuilder sb=new StringBuilder();
+        serialize(root, sb);
+        return sb.toString();
+    }
+    public void serialize(TreeNode root, StringBuilder sb) {
+        if(root==null){
+            sb.append(NULL).append(SEP);
+            return;
+        }
+        serialize(root.left,sb);
+        serialize(root.right,sb);
+        sb.append(root.val).append(SEP);
+    }
+    public TreeNode deserialize(String data) {
+        LinkedList<String> nodes=new LinkedList<>();
+        for (String s:data.split(SEP)) {
+            nodes.add(s);
+        }
+        return deserialize(nodes);
+    }
+    public TreeNode deserialize(LinkedList<String> nodes) {
+        if(nodes.isEmpty()) return null;
+        String cur=nodes.removeLast();
+        if(cur.equals(NULL)) return null;
+        TreeNode root=new TreeNode(Integer.parseInt(cur));
+        root.right=deserialize(nodes);
+        root.left=deserialize(nodes);
+        return root;
+    }
+}
+
+层序遍历
+public class Codec {
+    public String SEP = ",";
+    public String NULL = "null";
+    public String serialize(TreeNode root) {
+        if(root==null) return "";
+        StringBuilder sb=new StringBuilder();
+        Queue<TreeNode> q=new LinkedList<>();
+        q.offer(root);
+        while(!q.isEmpty()) {
+            TreeNode cur=q.poll();
+            if(cur==null){
+                sb.append(NULL).append(SEP);
+                continue;
+            }
+            sb.append(cur.val).append(SEP);
+            q.offer(cur.left);
+            q.offer(cur.right);
+        }
+        return sb.toString();
+    }
+    public TreeNode deserialize(String data) {
+        if(data.isEmpty()) return null;
+        String[] nodes=data.split(SEP);
+        TreeNode root=new TreeNode(Integer.parseInt(nodes[0]));
+        Queue<TreeNode> q=new LinkedList<>();
+        q.offer(root);
+
+        int i=1;
+        while(i<nodes.length){
+            TreeNode cur=q.poll();
+            String l=nodes[i++];
+            if(l.equals(NULL)) cur.left=null;
+            else{
+                cur.left=new TreeNode(Integer.parseInt(l));
+                q.offer(cur.left);
+            }
+            String r=nodes[i++];
+            if(r.equals(NULL)) cur.right=null;
+            else{
+                cur.right=new TreeNode(Integer.parseInt(r));
+                q.offer(cur.right);
+            }
+        }
+        return root;
+    }
+}
+
+652. 寻找重复的子树
+class Solution {
+    List<TreeNode> res=new ArrayList<>();
+    Map<String,Integer> map=new HashMap<>();
+    public List<TreeNode> findDuplicateSubtrees(TreeNode root) {
+        traverse(root);
+        return res;
+    }
+    public String traverse(TreeNode root) {
+        if(root==null) return "null";
+
+        String cur=traverse(root.left)+','+traverse(root.right)+','+root.val;
+
+        if(map.getOrDefault(cur,0)==1) res.add(root);
+        map.put(cur,map.getOrDefault(cur,0)+1);
+
+        return cur;
+    }
+}
+
+//分治
+654. 最大二叉树
+class Solution {
+    public TreeNode constructMaximumBinaryTree(int[] nums) {
+        return construct(nums,0,nums.length-1);
+    }
+    public TreeNode construct(int[] nums,int l,int r){
+        if(l>r) return null;
+        int max=Integer.MIN_VALUE,idx=0;
+        for(int i=l;i<=r;i++){
+            if(max<nums[i]){
+                max=nums[i];
+                idx=i;
+            }
+        }
+
+        TreeNode node=new TreeNode(max);
+        node.left=construct(nums,l,idx-1);
+        node.right=construct(nums,idx+1,r);
+        return node;
+    }
+}
+
+105. 从前序与中序遍历序列构造二叉树
+class Solution {
+    public TreeNode buildTree(int[] preorder, int[] inorder) {
+        return build(preorder, 0, preorder.length-1, inorder, 0, inorder.length-1);
+    }
+
+    public TreeNode build(int[] preorder, int preStart, int preEnd, int[] inorder, int inStart, int inEnd) {
+        if (preStart>preEnd) return null;
+        int rootV=preorder[preStart];
+        int idx=0;
+        for(int i=inStart;i<=inEnd;i++){
+            if(inorder[i]==rootV){
+                idx=i;
+                break;
+            }
+        }
+        int leftsize=idx-inStart;
+
+        TreeNode root=new TreeNode(rootV);
+        root.left=build(preorder, preStart+1, preStart+leftsize, inorder, inStart, idx-1);
+        root.right=build(preorder, preStart+1+leftsize, preEnd, inorder, idx+1, inEnd);
+        return root;
+    }
+}
+
+106. 从中序与后序遍历序列构造二叉树
+class Solution {
+    public TreeNode buildTree(int[] inorder, int[] postorder) {
+        return build(inorder, 0, inorder.length-1, postorder, 0, postorder.length-1);
+    }
+
+    public TreeNode build(int[] inorder, int inStart, int inEnd, int[] postorder, int postStart, int postEnd) {
+        if (postStart>postEnd) return null;
+        int rootV=postorder[postEnd];
+        int idx=0;
+        for(int i=inStart;i<=inEnd;i++){
+            if(inorder[i]==rootV){
+                idx=i;
+                break;
+            }
+        }
+        int leftsize=idx-inStart;
+
+        TreeNode root=new TreeNode(rootV);
+        root.left=build(inorder, inStart, idx-1, postorder, postStart, postStart+leftsize-1);
+        root.right=build(inorder, idx+1, inEnd, postorder, postStart+leftsize, postEnd-1);
+        return root;
+    }
+}
+
+前序和后序不能唯一确定一颗二叉树！因为没有中序遍历无法确定左右部分，也就是无法分割。
+
+109. 有序链表转换二叉搜索树  链表
+
+1110. 删点成林
+class Solution {
+    List<TreeNode> res=new ArrayList<>();
+    public List<TreeNode> delNodes(TreeNode root, int[] to_delete) {
+        Set<Integer> set=new HashSet<>();
+        for(int i:to_delete) set.add(i);
+        root=dfs(root,set);
+        if(root!=null) res.add(root);
+        return res;
+    }
+    public TreeNode dfs(TreeNode root,Set<Integer> to_delete){
+        if(root==null) return root;
+
+        root.left=dfs(root.left,to_delete);
+        root.right=dfs(root.right,to_delete);
+        if(to_delete.contains(root.val)){
+            if(root.left!=null) res.add(root.left);
+            if(root.right!=null) res.add(root.right);
+            root=null;
+        }
+        return root;
+    }
+}
+
+class Solution {
+    List<TreeNode> res=new ArrayList<>();
+    public List<TreeNode> delNodes(TreeNode root, int[] to_delete) {
+        Set<Integer> set=Arrays.stream(to_delete).boxed().collect(Collectors.toSet());
+        dfs(root,set,false);//返回是否节点置null
+        return res;
+    }
+    public boolean dfs(TreeNode root,Set<Integer> to_delete,boolean parent){
+        if(root==null) return false;
+        boolean del=to_delete.contains(root.val);
+        if(dfs(root.left,to_delete,!del)) root.left=null;
+        if(dfs(root.right,to_delete,!del)) root.right=null;
+        if(!del&&!parent) res.add(root);
+        return del;
+    }
+}
+
+112. 路径总和
+class Solution {
+    public boolean hasPathSum(TreeNode root, int sum) {
+        if(root==null) return false;
+        if(root.left==null&&root.right==null) return root.val==sum;
+        return hasPathSum(root.left,sum-root.val)||hasPathSum(root.right,sum-root.val);
+    }
+}
+
+113. 路径总和 II
+class Solution {
+    List<List<Integer>> res=new ArrayList<>();
+    public List<List<Integer>> pathSum(TreeNode root, int sum) {
+        dfs(root,sum,new ArrayList<>());
+        return res;
+    }
+    public void dfs(TreeNode root,int sum,List<Integer> list){
+        if(root==null) return;
+        List<Integer> cur= new ArrayList<>(list);
+        cur.add(root.val);
+        if(root.left==null&&root.right==null){
+            if(root.val==sum) res.add(cur);
+            return;
+        }
+        dfs(root.left,sum-root.val,cur);
+        dfs(root.right,sum-root.val,cur);
+    }
+}
+
+437. 路径总和 III
+class Solution {
+    public int pathSum(TreeNode root, int sum) {
+        if(root==null) return 0;
+        return dfs(root,sum)+pathSum(root.left,sum)+pathSum(root.right,sum);
+    }
+    public int dfs(TreeNode root,int sum) {
+        if(root==null) return 0;
+        int cnt=root.val==sum?1:0;
+        cnt+=dfs(root.left,sum-root.val);
+        cnt+=dfs(root.right,sum-root.val);
+        return cnt;
+    }
+}
+
+class Solution {
+    Map<Integer,Integer> map=new HashMap<>();
+    public int pathSum(TreeNode root, int sum) {
+        map.put(0,1);
+        return dfs(root,sum,0);
+    }
+    public int dfs(TreeNode root,int sum,int cur) {
+        if(root==null) return 0;
+        cur+=root.val;
+
+        int res=0;
+        res+=map.getOrDefault(cur-sum, 0);
+        map.put(cur,map.getOrDefault(cur,0)+1);
+
+        res+=dfs(root.left,sum,cur);
+        res+=dfs(root.right,sum,cur);
+        map.put(cur, map.get(cur)-1);
+        return res;
+    }
+
+}
+
+124. 二叉树中的最大路径和
+class Solution {
+    private int maxSum=Integer.MIN_VALUE;
+    public int maxPathSum(TreeNode root) {
+        dfs(root);
+        return maxSum;
+    }
+    public int dfs(TreeNode root){
+        if(root==null) return 0;
+
+        int l=Math.max(dfs(root.left),0);
+        int r=Math.max(dfs(root.right),0);
+        maxSum=Math.max(maxSum,root.val+l+r);
+        return root.val+Math.max(l,r);
+    }
+}
+
+687. 最长同值路径
+class Solution {
+    int res=0;
+    public int longestUnivaluePath(TreeNode root) {
+        dfs(root);
+        return res;
+    }
+    public int dfs(TreeNode root){//返回长链形式最长，不能是三叉
+        if(root==null) return 0;
+        int l=dfs(root.left);
+        int r=dfs(root.right);
+
+        l=root.left!=null&&root.val==root.left.val?l+1:0;
+        r=root.right!=null&&root.val==root.right.val?r+1:0;
+        res=Math.max(res,l+r);
+        return Math.max(l,r);
+    }
+}
+
+1120. 子树的最大平均值
+class Solution {
+    public double maxSum=Integer.MIN_VALUE;
+    public TreeNode maxNode=null;
+    public static TreeNode getMaximumAverage(TreeNode root) {
+        dfs(root);
+        return maxNode;
+    }
+    public double[] dfs(TreeNode root) {
+        if(root == null) return new double[]{0, 0};
+
+        double cnt=1;
+        double sum=root.val;
+        if(root.children!=null) {
+            for(TreeNode child: root.children) {
+                double[] cur=dfs(child);
+                sum+=cur[0];
+                cnt+=cur[1];
+            }
+        }
+        double avg=sum/cnt;
+        if(cnt>1&&avg>maxSum) {
+            maxSum=average;
+            maxNode=root;
+        }
+        return new double[]{sum, count};
+    }
+}
+
+1373. 二叉搜索子树的最大键值和
+//最小的BST节点为叶子节点
+class Solution {
+    int max=0;
+    public int maxSumBST(TreeNode root) {
+        dfs(root);
+        return max;
+    }
+    public int[] dfs(TreeNode root){
+        if(root==null) return new int[]{1,Integer.MAX_VALUE,Integer.MIN_VALUE,0};
+        int[] left=dfs(root.left);
+        int[] right=dfs(root.right);
+        int[] res=new int[4];//1是以root为根最小值, 2是以root为根最大值,
+        if(left[0]==1&&root.val>left[2]&&right[0]==1&&root.val<right[1]){
+            res[0]=1;
+            res[1]=Math.min(root.val,left[1]);
+            res[2]=Math.max(root.val,right[2]);
+            res[3]=root.val+left[3]+right[3];
+            max=Math.max(max,res[3]);
+        }else res[0]=0;
+        return res;
+    }
+}
+
+236. 二叉树的最近公共祖先
+class Solution {
+    public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
+        if(root==null||root==p||root==q) return root;
+        TreeNode left=lowestCommonAncestor(root.left,p,q);
+        TreeNode right=lowestCommonAncestor(root.right,p,q);
+        if(left==null) return right;
+        if(right==null) return left;
+        return root;
+    }
+}
+
+235. 二叉搜索树的最近公共祖先
+class Solution {
+    public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
+        if(root.val>p.val&&root.val>q.val) return lowestCommonAncestor(root.left,p,q);
+        else if(root.val<p.val&&root.val<q.val) return lowestCommonAncestor(root.right,p,q);
+        else return root;
+    }
+}
+
+class Solution {
+    public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
+        while(root!=null){
+            if(root.val>p.val&&root.val>q.val) root=root.left;
+            else if(root.val<p.val&&root.val<q.val) root=root.right;
+            else return root;
+        }
+        return null;
+    }
+}

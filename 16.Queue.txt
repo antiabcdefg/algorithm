@@ -1,0 +1,232 @@
+剑指 Offer 59 - II. 队列的最大值
+class MaxQueue {
+    Queue<Integer> q;
+    Deque<Integer> maxq;
+    public MaxQueue() {
+        q=new LinkedList<>();
+        maxq=new LinkedList<>();
+    }
+    public int max_value() {
+        if(maxq.isEmpty()) return -1;
+        return maxq.peekFirst();
+    }
+    public void push_back(int value) {
+        while(!maxq.isEmpty()&&value>maxq.peekLast()) maxq.pollLast();
+        q.offer(value);
+        maxq.offerLast(value);
+    }
+    public int pop_front() {
+        if(q.isEmpty()) return -1;
+        int res=q.poll();
+        if(res==maxq.peekFirst()) maxq.pollFirst();
+        return res;
+    }
+}
+
+332. 重新安排行程
+class Solution {
+    public List<String> findItinerary(List<List<String>> tickets) {
+        List<String> res=new ArrayList<>();
+        if(tickets.size()==0) return res;
+        Map<String,Queue<String>> map=new HashMap<>();
+        for(List<String> t:tickets){
+            Queue<String> cur=map.computeIfAbsent(t.get(0),k->new PriorityQueue<>());
+            cur.add(t.get(1));
+            map.put(t.get(0),cur);
+        }
+
+        Stack<String> stk=new Stack();
+        stk.push("JFK");
+        while(!stk.isEmpty()){
+            String s=stk.peek();
+            Queue<String> cur=map.get(s);
+            if(cur!=null&&!cur.isEmpty()) stk.push(cur.poll());
+            else res.add(0,stk.pop());
+        }
+        return res;
+    }
+}
+
+class Solution {
+    List<String> res=new ArrayList<>();
+    Map<String,Queue<String>> map=new HashMap<>();
+    public List<String> findItinerary(List<List<String>> tickets) {
+        if(tickets.size()==0) return res;
+        for(List<String> t:tickets){
+            Queue<String> cur=map.computeIfAbsent(t.get(0),k->new PriorityQueue<>());
+            cur.add(t.get(1));
+            map.put(t.get(0),cur);
+        }
+
+        dfs("JFK");
+        return res;
+    }
+    private void dfs(String s) {
+        Queue<String> cur=map.get(s);
+        while(cur!=null&&!cur.isEmpty()) dfs(cur.poll());
+        res.add(0,s);
+    }
+}
+
+1670. 设计前中后队列
+class FrontMiddleBackQueue {
+    Deque<Integer> left;
+    Deque<Integer> right;
+    public FrontMiddleBackQueue() {
+        left=new ArrayDeque<>();
+        right=new ArrayDeque<>();
+    }
+    public void pushFront(int val) {
+        left.addFirst(val);
+        reBalance();
+    }
+    public void pushMiddle(int val) {
+        if(left.size()==right.size()) right.addFirst(val);
+        else left.addLast(val);
+    }
+    public void pushBack(int val) {
+        right.addLast(val);
+        reBalance();
+    }
+    public int popFront() {
+        Integer cur=left.pollFirst();
+        if(cur==null) return right.size()==0?-1:right.pollLast();
+        else{
+            reBalance();
+            return cur;
+        }
+    }
+    public int popMiddle() {
+        if(left.size()==right.size()){
+            Integer cur=left.pollLast();
+            return cur==null?-1:cur;
+        }
+        else return right.pollFirst();
+    }
+    public int popBack() {
+        Integer cur=right.pollLast();
+        if(cur==null) return left.size()==0?-1:left.pollFirst();
+        else{
+            reBalance();
+            return cur;
+        }
+    }
+    public void reBalance() {
+        if(left.size()>right.size()) right.addFirst(left.pollLast());
+        else if(right.size()==left.size()+2) left.addLast(right.pollFirst());
+    }
+}
+
+FibFrog
+class Solution {
+    public int solution(int[] A) {
+        int n=A.length;
+        if(n<=2) return 1;
+        List<Integer> fib=new ArrayList<>();
+        fib.add(1); fib.add(1);
+        for(int i=2;i<n;i++){
+            int cur=fib.get(i-1)+fib.get(i-2);
+            if(cur>n) break;
+            fib.add(cur);
+        }
+
+        Queue<int[]> q=new LinkedList<>();
+        q.add(new int[]{-1,0});//position, cnt
+        boolean[] visited=new boolean[n+1];
+
+        while(!q.isEmpty()){
+            int[] cur=q.poll();
+            for(int i=fib.size()-1;i>=0;i--){
+                int next=cur[0]+fib.get(i);
+                if(next==n) return cur[1]+1;
+                else if(next<n&&A[next]==1&&!visited[next]){
+                    visited[next]=true;
+                    q.add(new int[]{next,cur[1]+1});
+                }
+            }
+        }
+        return -1;
+    }
+}
+
+1642. 可以到达的最远建筑
+//优先使用梯子
+class Solution {
+    public int furthestBuilding(int[] heights, int bricks, int ladders) {
+        PriorityQueue<Integer> q=new PriorityQueue<>();
+        for(int i=1;i<heights.length;i++){
+            if(heights[i]<=heights[i-1]) continue;
+            int cur=heights[i]-heights[i-1];
+            q.offer(cur);
+            if(q.size()>ladders) bricks-=q.poll();
+            if(bricks<0) return i-1;
+        }
+        return heights.length-1;
+    }
+}
+
+StoneWall
+class Solution {
+    public int solution(int[] H) {
+        Stack<Integer> stk=new Stack<>();
+        int res=0;
+        for(int i=0;i< H.length;i++){
+            while(!stk.isEmpty()&&H[i]<stk.peek()) stk.pop();
+            if(stk.isEmpty()||H[i]>stk.peek()){
+                res++;
+                stk.push(H[i]);
+            }
+        }
+        return res;
+    }
+}
+
+218. 天际线问题
+//扫描线法
+class Solution {
+    public List<List<Integer>> getSkyline(int[][] buildings) {
+        List<List<Integer>> res=new ArrayList<>();
+        List<int[]> heights=new ArrayList<>();
+        for(int[] b:buildings){
+            heights.add(new int[]{b[0], -b[2]});//负号左边界
+            heights.add(new int[]{b[1], b[2]});
+        }
+        Collections.sort(heights,(a,b)->(a[0]==b[0]?a[1]-b[1]:a[0]-b[0]));
+        Queue<Integer> maxHeap=new PriorityQueue<>((a,b)->b-a);
+        maxHeap.add(0);
+        int pre=0;
+        for(int[] points:heights){
+            if(points[1]<0) maxHeap.add(-points[1]);//扫描左边界加入
+            else maxHeap.remove(points[1]);//扫描右边界说明已访问完,删除
+            int cur=maxHeap.peek();
+            if(pre!=cur){
+                res.add(Arrays.asList(points[0],cur));
+                pre=cur;
+            }
+        }
+        return res;
+    }
+}
+
+class Solution {
+    public List<List<Integer>> getSkyline(int[][] buildings) {
+        List<List<Integer>> res=new ArrayList<>();
+        Queue<int[]> q=new PriorityQueue<>((a,b)->(b[0]==a[0]?b[1]-a[1]:b[0]-a[0]));//height + y
+        int n=buildings.length,cur_x=0,cur_h=0;
+        for(int i=0;i<n||!q.isEmpty();){
+            if(q.isEmpty()||i<n&&buildings[i][0]<=q.peek()[1]){
+                cur_x=buildings[i][0];
+                while(i<n&&cur_x==buildings[i][0]){
+                    q.add(new int[]{buildings[i][2],buildings[i][1]});
+                    i++;
+                }
+            }else{
+                cur_x=q.peek()[1];
+                while(!q.isEmpty()&&cur_x>=q.peek()[1]) q.poll();
+            }
+            cur_h=q.isEmpty()?0:q.peek()[0];
+            if(res.isEmpty()||cur_h!=res.get(res.size()-1).get(1)) res.add(Arrays.asList(cur_x,cur_h));
+        }
+        return res;
+    }
+}

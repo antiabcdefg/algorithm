@@ -1,0 +1,466 @@
+可以保持取出数字在原数组中的相对顺序
+出现嵌套的时候
+
+
+面试题 03.01. 三合一
+class TripleInOne {
+    int[] stk,top;
+    int size;
+    public TripleInOne(int stackSize) {
+        stk=new int[stackSize*3];
+        top=new int[]{0,1,2};
+        size=stackSize;
+    }
+    public void push(int stackNum, int value) {
+        if(top[stackNum]/3==size) return;
+        stk[top[stackNum]]=value;
+        top[stackNum]+=3;
+    }
+    public int pop(int stackNum) {
+        if(isEmpty(stackNum)) return -1;
+        int res=stk[top[stackNum]-3];
+        top[stackNum]-=3;
+        return res;
+    }
+    public int peek(int stackNum) {
+        if(isEmpty(stackNum)) return -1;
+        return stk[top[stackNum]-3];
+    }
+    public boolean isEmpty(int stackNum) {
+        return top[stackNum]<3;
+    }
+}
+
+232. 用栈实现队列
+class MyQueue {
+    Stack<Integer> in,out;
+    public MyQueue() {
+        in=new Stack<>();
+        out=new Stack<>();
+    }
+    public void push(int x) {
+        in.push(x);
+    }
+    public int pop() {
+        in2out();
+        return out.pop();
+        //return out.isEmpty()?-1:out.pop();
+    }
+    public int peek() {
+        in2out();
+        return out.peek();
+    }
+    public boolean empty() {
+        return in.isEmpty()&&out.isEmpty();
+    }
+    public void in2out(){
+        if(out.isEmpty()){
+            while(!in.isEmpty()) out.push(in.pop());
+        }
+    }
+}
+
+
+225. 用队列实现栈
+class MyStack {
+    Queue<Integer> q;
+    public MyStack() {
+        q=new LinkedList<>();
+    }
+    public void push(int x) {
+        q.offer(x);
+        int size=q.size();
+        while(size-->1) q.offer(q.poll());
+    }
+    public int pop() {
+        return q.poll();
+    }
+    public int top() {
+        return q.peek();
+    }
+    public boolean empty() {
+        return q.isEmpty();
+    }
+}
+
+155. 最小栈
+class MinStack {
+    Stack<Integer> minstk,stk;
+    public MinStack() {
+        minstk=new Stack<>();
+        stk=new Stack<>();
+    }
+    public void push(int x) {
+        stk.push(x);
+        if(minstk.isEmpty()||x<=minstk.peek()) minstk.push(x);
+        else minstk.push(minstk.peek());
+    }
+    public void pop() {
+        stk.pop();
+        minstk.pop();
+    }
+    public int top() {
+        return stk.peek();
+    }
+    public int getMin() {
+        return minstk.peek();
+    }
+}
+
+716. 最大栈
+//最坏时间复杂度O(n)
+class MaxStack {
+    Stack<Integer> maxstk,stk;
+    public MaxStack() {
+        maxstk=new Stack<>();
+        stk=new Stack<>();
+    }
+    public void push(int x) {
+        stk.push(x);
+        if(maxstk.isEmpty()||x>=maxstk.peek()) maxstk.push(x);
+    }
+    public int pop() {
+        if(!maxstk.isEmpty()||maxstk.peek()==stk.peek()) maxstk.pop();
+        return stk.pop();
+    }
+    public int top() {
+        return stk.peek();
+    }
+    public int peekMax() {
+        return maxstk.peek();
+    }
+    public int popMax() {
+        int max=maxstk.peek();
+        Stack<Integer> temp=new Stack<>();
+        while(stk.peek()!=max) temp.push(stk.pop());
+        stk.pop();maxstk.pop();
+        while (!temp.isEmpty()) push(temp.pop());
+        return max;
+    }
+}
+
+//list+map
+//O(1) top O(logn) 其他
+class Node {
+    int val;
+    Node prev,next;
+    public Node() {
+
+    }
+    public Node(int value) {
+        this.val=value;
+    }
+}
+class DoubleLinkedList {
+    Node head,tail;
+    public DoubleLinkedList() {
+        head=new Node();
+        tail=new Node();
+        head.next=tail;
+        tail.prev=head;
+    }
+    public void add(Node cur) {
+        cur.next=tail;
+        cur.prev=tail.prev;
+        tail.prev=cur.prev.next=cur;
+    }
+    public void remove(Node cur) {
+        cur.prev.next=cur.next;
+        cur.next.prev=cur.prev;
+    }
+    public int peek() {
+        return tail.prev.val;
+    }
+    public int pop(){
+        int res=tail.prev.val;
+        remove(tail.prev);
+        return res;
+    }
+}
+class MaxStack {
+    DoubleLinkedList list;
+    TreeMap<Integer,List<Node>> map;
+    public MaxStack() {
+        list=new DoubleLinkedList();
+        map=new TreeMap<>();
+    }
+    public void push(int x) {
+        Node newNode=new Node(x);
+        list.add(newNode);
+        if(!map.containsKey(x)) map.put(x,new ArrayList<>());
+        map.get(x).add(newNode);
+    }
+    public int pop() {
+        int cur=list.pop();
+        List<Node> l=map.get(cur);
+        l.remove(l.size()-1);
+        if(l.isEmpty()) map.remove(cur);
+        return cur;
+    }
+    public int top() {
+        return list.peek();
+    }
+    public int peekMax() {
+        return map.lastKey();
+    }
+    public int popMax() {
+        int max=peekMax();
+        List<Node> l=map.get(max);
+        Node del=l.remove(l.size()-1);
+        if(l.isEmpty()) map.remove(max);
+        list.remove(del);
+        return max;
+    }
+}
+
+71. 简化路径
+//O(n) O(n)
+class Solution {
+    public String simplifyPath(String path) {
+        Stack<String> stack=new Stack<>();
+        String[] str=path.split("/");
+        for(String s:str){
+            if(s.equals("..")){
+                if(!stack.isEmpty()) stack.pop();
+            }
+            else if(!s.equals("")&&!s.equals(".")) stack.push(s);
+        }
+        if(stack.isEmpty()) return "/";
+        StringBuilder s=new StringBuilder();
+        for(String i:stack)
+            s.append("/").append(i);
+        return s.toString();
+    }
+}
+
+1673. 找出最具竞争力的子序列
+class Solution {
+    public int[] mostCompetitive(int[] nums, int k) {
+        Stack<Integer> stk=new Stack<>();
+        for(int i=0;i<nums.length;i++){
+            while(!stk.isEmpty()&&stk.peek()>nums[i]&&stk.size()+nums.length-i>k)
+                stk.pop();
+            stk.push(nums[i]);
+        }
+        while(stk.size()>k) stk.pop();
+        return stk.stream().mapToInt(i->i).toArray();
+    }
+}
+
+946. 验证栈序列
+class Solution {
+    public boolean validateStackSequences(int[] pushed, int[] popped) {
+        int i=0,j=0;
+        for(int n:pushed){
+            pushed[i++]=n;
+            while(i>0&&pushed[i-1]==popped[j]){
+                i--;
+                j++;
+            }
+        }
+        return i==0;
+    }
+}
+
+
+
+
+计算器
+150. 逆波兰表达式求值
+class Solution {
+    public int evalRPN(String[] tokens) {
+        Stack<Integer> nums=new Stack<>();
+        for(String s:tokens){
+            if(s.equals("+")||s.equals("-")||s.equals("*")||s.equals("/")){
+                int b=nums.pop(),a=nums.pop();
+                switch(s){
+                    case "+": nums.push(a+b);break;
+                    case "-": nums.push(a-b);break;
+                    case "*": nums.push(a*b);break;
+                    case "/": nums.push(a/b);break;
+                }
+            }else nums.push(Integer.parseInt(s));
+        }
+        return nums.pop();
+    }
+}
+
+class Solution {
+    public int evalRPN(String[] tokens) {
+        int[] nums=new int[tokens.length/2+1];
+        int idx=0;
+        for(String s:tokens){
+            if(s.equals("+")||s.equals("-")||s.equals("*")||s.equals("/")){
+                int b=nums[--idx],a=nums[--idx];
+                switch(s){
+                    case "+": nums[idx++]=a+b;break;
+                    case "-": nums[idx++]=a-b;break;
+                    case "*": nums[idx++]=a*b;break;
+                    case "/": nums[idx++]=a/b;break;
+                }
+            }else nums[idx++]=Integer.parseInt(s);
+        }
+        return nums[0];
+    }
+}
+
+227. 基本计算器 II  加减乘除
+class Solution {
+    public int calculate(String s) {
+        Stack<Integer> stk=new Stack<>();
+        int num=0;
+        char op='+';
+        for(int i=0;i<s.length();i++){
+            if(Character.isDigit(s.charAt(i))) num=num*10+s.charAt(i)-'0';
+            if(i==s.length()-1||!Character.isDigit(s.charAt(i))&&s.charAt(i)!=' '){
+                if(op=='+') stk.push(num);
+                else if(op=='-') stk.push(-num);
+                else if(op=='*') stk.push(num*stk.pop());
+                else if(op=='/') stk.push(stk.pop()/num);
+                num=0;
+                op=s.charAt(i);
+            }
+        }
+        int res=0;
+        while(!stk.isEmpty()) res+=stk.pop();
+        return res;
+    }
+}
+
+224. 基本计算器  加减括号
+class Solution {
+    public int calculate(String s) {
+        Stack<Integer> stk=new Stack<>();
+        int res=0,op=1;
+        for(int i=0;i<s.length();i++){
+            char c=s.charAt(i);
+            if(c>='0'&&c<='9'){
+                int num=0;
+                while(i<s.length()&&s.charAt(i)>='0'&&s.charAt(i)<='9') num=num*10+s.charAt(i++)-'0';
+                res+=num*op;
+                i--;
+            }
+            else if(c=='+') op=1;
+            else if(c=='-') op=-1;
+            else if(c=='('){
+                stk.push(res);
+                stk.push(op);
+                res=0;
+                op=1;
+            }
+            else if(c==')'){
+                res*=stk.pop();
+                res+=stk.pop();
+            }
+        }
+        return res;
+    }
+}
+
+class Solution {
+    public int calculate(String s) {
+        Stack<Integer> stk=new Stack<>();
+        int res=0,num=0,op=1;
+        for(int i=0;i<s.length();i++){
+            char c=s.charAt(i);
+            if(c>='0'&&c<='9') num=num*10+c-'0';
+            else if(c=='('){
+                int j=i,cnt=0;
+                for(;i<s.length();i++){
+                    if(s.charAt(i)=='(') cnt++;
+                    else if(s.charAt(i)==')') cnt--;
+                    if(cnt==0) break;
+                }
+                num=calculate(s.substring(j+1,i));
+            }
+            if(c=='+'||c=='-'||i==s.length()-1){
+                res+=op*num;
+                num=0;
+                op=c=='+'?1:-1;
+            }
+        }
+        return res;
+    }
+}
+
+772. 基本计算器 III  加减乘除括号
+class Solution {
+    public int calculate(String s) {
+        Stack<Integer> stk=new Stack<>();
+        int num=0;
+        char op='+';
+        for(int i=0;i<s.length();i++){
+            char c=s.charAt(i);
+            if(c>='0'&&c<='9') num=num*10+c-'0';
+            else if(c=='('){
+                int j=i,cnt=0;
+                for(;i<s.length();i++){
+                    if(s.charAt(i)=='(') cnt++;
+                    else if(s.charAt(i)==')') cnt--;
+                    if(cnt==0) break;
+                }
+                num=calculate(s.substring(j+1,i));
+            }
+            if(c=='+'||c=='-'||c=='*'||c=='/'||i==s.length()-1){
+                if(op=='+') stk.push(num);
+                else if(op=='-') stk.push(-num);
+                else if(op=='*') stk.push(num*stk.pop());
+                else if(op=='/') stk.push(stk.pop()/num);
+                num=0;
+                op=c;
+            }
+        }
+        int res=0;
+        while(!stk.isEmpty()) res+=stk.pop();
+        return res;
+    }
+}
+
+394. 字符串解码
+class Solution {
+    public String decodeString(String s) {
+        String res="";
+        String num="";
+        Stack<String[]> stk=new Stack<>();
+        for(int i=0;i<s.length();i++){
+            if(Character.isLetter(s.charAt(i))) res+=s.charAt(i);
+            else if(Character.isDigit(s.charAt(i))) num+=s.charAt(i);
+            else if(s.charAt(i)=='['){
+                stk.push(new String[]{res,num});
+                res="";
+                num="";
+            }else if(s.charAt(i)==']'){
+                String[] cur=stk.pop();
+                String temp=res;
+                res=cur[0];
+                for(int j=0;j<Integer.valueOf(cur[1]);j++) res+=temp;
+            }
+        }
+        return res;
+    }
+}
+
+class Solution {
+    int idx=0;
+    public String decodeString(String s) {
+        return dfs(s,0);
+    }
+    public String dfs(String s,int start){
+        StringBuilder sb=new StringBuilder();
+        StringBuilder num=new StringBuilder();
+        for(int i=start;i<s.length();i++){
+            if(Character.isLetter(s.charAt(i))) sb.append(s.charAt(i));
+            else if(Character.isDigit(s.charAt(i))) num.append(s.charAt(i));
+            else if(s.charAt(i)=='['){
+                String str=dfs(s,i+1);
+                for(int j=0;j<Integer.valueOf(num.toString());j++) sb.append(str);
+                num.setLength(0);
+                i=idx;
+            }else if(s.charAt(i)==']'){
+                idx=i;
+                return sb.toString();
+            }
+        }
+        return sb.toString();
+    }
+}

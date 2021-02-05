@@ -1,0 +1,180 @@
+解决区间上的更新以及求和问题。
+
+树状数组(Binary Indexed Tree)  只能维护前缀操作
+利用索引的二进制表示来划分子序列
+空间 O(n)
+get 时间 O(logn)
+set 时间 O(logn)
+
+线段树(Segment Tree)  维护区间操作
+不断进行二分来划分子序列
+
+自顶向下 线段树 不断递归压栈
+自底向上 zkw线段树
+
+
+树状数组逻辑上是一棵普通的树，而线段树逻辑上是一颗完全二叉树
+两者时间复杂度级别相同, 但是树状数组的常数明显优于线段树而且代码实现简单
+线段树的空间复杂度在常数上为树状数组的两倍
+一般来讲，凡是可以使用树状数组解决的问题, 使用线段树也可以解决, 但是线段树能够解决的问题树状数组未必能够解决（例如求区间最大/小值）
+
+
+
+//https://zhuanlan.zhihu.com/p/92920381
+//https://leetcode-cn.com/problems/range-sum-query-mutable/solution/xian-duan-shu-zu-shou-hui-tu-xiang-yi-qing-er-chu-/
+307. 区域和检索 - 数组可修改
+//折中策略
+//O(m*sqrt(n))
+class NumArray {
+    int len, block;
+    List<List<Integer>> block_sum;
+    public NumArray(int[] nums) {
+        len=nums.length;
+        block=(int)Math.sqrt(len);
+        block_sum=new ArrayList<>();
+
+        List<Integer> sum=new ArrayList<>();
+        int accum=0;
+        for(int i=0;i<len;i++){
+            accum+=nums[i];
+            sum.add(accum);
+            if((i+1)%block==0||i==len-1){
+                block_sum.add(new ArrayList<>(sum));
+                accum=0;
+                sum.clear();
+            }
+        }
+    }
+
+    public void update(int i, int val) {
+        int bi=i/block,bj=i%block;
+        int diff=val-block_sum.get(bi).get(bj);
+        if(bj>0) diff+=block_sum.get(bi).get(bj-1);
+        for(int x=bj;x<block_sum.get(bi).size();x++){
+            int cur=block_sum.get(bi).get(x)+diff;
+            block_sum.get(bi).set(x,cur);
+        }
+    }
+
+    public int sumRange(int i, int j) {
+        int bi=i/block,bj=j/block;
+        int res=0;
+        for(int x=bi;x<bj;x++){
+            res+=block_sum.get(x).get(block_sum.get(x).size()-1);
+        }
+        if(i%block!=0) res-=block_sum.get(bi).get(i%block-1);
+        res+=block_sum.get(bj).get(j%block);
+        return res;
+    }
+}
+
+//树状数组
+class NumArray {
+    int[] data,bit;
+    public NumArray(int[] nums) {
+        data=nums;
+        bit=new int[nums.length+1];
+        for(int i=0;i<nums.length;i++) add(i+1,nums[i]);
+    }
+    public void update(int i, int val) {
+        add(i+1,val-data[i]);
+        data[i]=val;
+    }
+    public int sumRange(int i, int j) {
+        return sum(j+1)-sum(i);
+    }
+    int lowBit(int x){
+        return x&(-x);
+    }
+    int sum(int i){//[0,idx]数字和
+        int res=0;
+        for(;i>0;i-=lowBit(i)){
+            res+=bit[i];
+        }
+        return res;
+    }
+    void add(int i,int val){
+        for(;i<=data.length;i+=lowBit(i)){
+            bit[i]+=val;
+        }
+    }
+}
+
+//线段树
+class NumArray {
+    int[] st;
+    int n;
+    public NumArray(int[] nums) {
+        n=nums.length;
+        st=new int[2*n];
+        buildST(nums);
+    }
+    public void update(int i, int val) {
+        i+=n;
+        st[i]=val;
+        while(i>0){
+            st[i>>1]=st[i]+st[i^1];
+            i>>=1;
+        }
+    }
+    public int sumRange(int i, int j) {
+        i+=n;j+=n;
+        int res=0;
+        while(i<=j){
+            if((i&1)==1) res+=st[i++];
+            if((j&1)==0) res+=st[j--];
+            i>>=1;
+            j>>=1;
+        }
+        return res;
+    }
+
+    void buildST(int[] nums){
+        for(int i=n;i<2*n;i++) st[i]=nums[i-n];
+        for(int i=n-1;i>0;i--) st[i]=st[i<<1]+st[(i<<1)|1];
+    }
+}
+
+
+315. 计算右侧小于当前元素的个数  归并排序
+
+1649. 通过指令创建有序数组
+class Solution {
+    int[] bit;
+    int n;
+    public int createSortedArray(int[] instructions) {
+        int MOD=(int)(1e9+7);
+        Map<Integer,Integer> map=new HashMap<>();
+        TreeSet<Integer> set=new TreeSet<>();//先进行离散化
+        for(int i:instructions) set.add(i);
+        int index=1;
+        while(!set.isEmpty()) map.put(set.pollFirst(),index++);
+
+        n=map.size();
+        bit=new int[n+1];
+        int res=0;
+        for(int i=0;i<instructions.length;i++){
+            int idx=map.get(instructions[i]);
+            int less=sum(idx-1);
+            int more=i-sum(idx);
+            res=res%MOD+Math.min(less,more)%MOD;
+            add(idx,1);
+        }
+        return res;
+    }
+    int lowBit(int x){
+        return x&(-x);
+    }
+    int sum(int i){
+        int res=0;
+        for(;i>0;i-=lowBit(i)){
+            res+=bit[i];
+        }
+        return res;
+    }
+    void add(int i,int val){
+        for(;i<=n;i+=lowBit(i)){
+            bit[i]+=val;
+        }
+    }
+}

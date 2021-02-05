@@ -1,0 +1,361 @@
+PriorityQueue<Integer> minHeap=new PriorityQueue<>((a,b)->a-b);
+PriorityQueue<Integer> maxHeap=new PriorityQueue<>((a,b)->b-a);
+Queue<String> maxHeap=new PriorityQueue<>((a,b)->map.get(a).equals(map.get(b))?b.compareTo(a):map.get(a)-map.get(b));//字典顺序比较两个字符串
+
+215. 数组中的第K个最大元素 无序
+class Solution {
+    public int findKthLargest(int[] nums, int k) {
+        if(nums.length==0) return 0;
+        PriorityQueue<Integer> minHeap=new PriorityQueue<>();
+        for(int i:nums){
+            minHeap.offer(i);
+            if(minHeap.size()>k) minHeap.poll();
+        }
+        return minHeap.peek();
+    }
+}
+
+//Quickselect用于在未排序的数组中找到第k个最小/大数字
+//O(n) O(1)
+//将小于nums[len-k]元素放pivot左边,大于放右边
+class Solution {
+    public int findKthLargest(int[] nums, int k) {
+        if(nums.length==0) return 0;
+        return quickSelect(nums,0,nums.length-1,nums.length-k);
+    }
+    public int quickSelect(int[] nums, int l, int r, int target){
+        int cur=partition(nums,l,r);
+        if(cur==target) return nums[cur];
+        else if(cur<target) return quickSelect(nums,cur+1,r,target);
+        else return quickSelect(nums,l,cur-1,target);
+    }
+    public int partition(int[] nums, int l, int r){
+        int p=nums[l],i=l,j=r;
+        while(i<j){
+            while(i<j&&nums[j]>=p) j--;
+            while(i<j&&nums[i]<=p) i++;
+            swap(nums,i,j);
+        }
+        swap(nums,l,i);
+        return i;
+    }
+    public void swap(int[] nums,int i,int j){
+        int temp=nums[i];
+        nums[i]=nums[j];
+        nums[j]=temp;
+    }
+}
+
+剑指 Offer 40. 最小的k个数
+class Solution {
+    public int[] smallestK(int[] arr, int k) {
+        if(arr.length==0) return new int[]{};
+        PriorityQueue<Integer> maxHeap=new PriorityQueue<>((a,b)->b-a);
+        int[] res=new int[k];
+        for(int i:arr){
+            maxHeap.offer(i);
+            if(maxHeap.size()>k) maxHeap.poll();
+        }
+        for(int i=k-1;i>=0;i--) res[i]=maxHeap.poll();
+        return res;
+    }
+}
+
+973. 最接近原点的 K 个点
+class Solution {
+    public int[][] kClosest(int[][] points, int K) {
+        if(points.length==0) return new int[][]{};
+        int[][] res=new int[K][2];
+        PriorityQueue<int[]> maxHeap=new PriorityQueue<>(K,new Comparator<int[]>(){
+            public int compare(int[] a,int[] b){
+                return b[0]*b[0]+b[1]*b[1]-a[0]*a[0]-a[1]*a[1];
+            }
+        });
+        for(int[] i:points){
+            maxHeap.offer(i);
+            if(maxHeap.size()>K) maxHeap.poll();
+        }
+        for(int i=K-1;i>=0;i--) res[i]=maxHeap.poll();
+        return res;
+    }
+}
+
+378. 有序矩阵中第K小的元素
+class Solution {
+    public int kthSmallest(int[][] matrix, int k) {
+        int n=matrix.length,m=matrix[0].length;
+        PriorityQueue<Integer> maxHeap=new PriorityQueue<>((a,b)->b-a);
+        for(int i=0;i<n*m;i++){
+            maxHeap.offer(matrix[i/n][i%m]);
+            while(maxHeap.size()>k) maxHeap.poll();
+        }
+        return maxHeap.peek();
+    }
+}
+
+class Solution {
+    public int kthSmallest(int[][] matrix, int k) {
+        int n=matrix.length,m=matrix[0].length;
+        int l=matrix[0][0],r=matrix[n-1][m-1];
+        while(l<r){
+            int mid=l+((r-l)>>>1);
+            int cnt=0;
+            for(int i=0;i<n;i++) for(int j=0;j<m&&matrix[i][j]<=mid;j++) cnt++;
+            if(cnt<k) l=mid+1;
+            else r=mid;
+        }
+        return l;
+    }
+}
+
+1167. 连接棒材的最低费用
+class Solution {
+    public int connectSticks(int[] sticks) {
+        if(sticks==null || sticks.length<2) return 0;
+
+        PriorityQueue<Integer> minHeap=new PriorityQueue<>();
+        for(int num:sticks) minHeap.add(num);
+
+        int res = 0;
+        while(minHeap.size()>1){
+            int merge=minHeap.poll()+minHeap.poll();
+            res+=merge;
+            minHeap.add(merge);
+        }
+
+        return res;
+    }
+}
+
+347. 前 K 个高频元素
+class Solution {
+    public int[] topKFrequent(int[] nums, int k) {
+        if(nums.length==0) return new int[]{};
+        HashMap<Integer,Integer> map=new HashMap<>();
+        for(int i:nums) map.put(i,map.getOrDefault(i,0)+1);
+
+        PriorityQueue<Integer> maxheap = new PriorityQueue<>((a,b)->map.get(b)-map.get(a));
+        for(Integer m:map.keySet()) maxheap.offer(m);
+
+        int res[]=new int[k];
+        for(int i=0;i<k;i++) res[i]=maxheap.poll();
+        return res;
+    }
+}
+
+451. 根据字符出现频率排序
+class Solution {
+    public String frequencySort(String s) {
+        int[] buckets=new int[128];
+        for(char c:s.toCharArray()) buckets[c]++;
+
+        PriorityQueue<Character> maxHeap=new PriorityQueue<>((a,b)->(Integer.compare(buckets[b],buckets[a])));
+        for(int i=0;i<buckets.length;i++){
+            if(buckets[i]!=0) maxHeap.offer((char)i);
+        }
+
+        StringBuilder sb=new StringBuilder();
+        while(!maxHeap.isEmpty()){
+            char c=maxHeap.poll();
+            while(buckets[c]-->0) sb.append(c);
+        }
+        return sb.toString();
+    }
+}
+
+//3-Way QuickSort
+class Solution {
+    public int[] buckets;
+    public String frequencySort(String s) {
+        char[] chars=s.toCharArray();
+        buckets=new int[128];
+        for(char c:chars) buckets[c]++;
+
+        int len=chars.length;
+        quicksort(chars,0,len-1);
+        return new String(chars);
+    }
+    private void quicksort(char[] chars, int l, int r) {
+        if(l>=r) return;
+        int rand=new Random().nextInt(r-l+1)+l;
+        swap(chars,rand,l);
+
+        char p=chars[l];
+        int lt=l,gt=r+1,i=l+1;
+        while(i<gt){
+            if(buckets[chars[i]]>buckets[p]) swap(chars,i++,lt++ +1);
+            else if(chars[i]==p) i++;
+            else swap(chars,i,gt-- -1);
+        }
+        swap(chars,l,lt);
+
+        quicksort(chars,l,lt-1);
+        quicksort(chars,gt,r);
+    }
+    private void swap(char[] nums, int i, int j) {
+        char temp=nums[i];
+        nums[i]=nums[j];
+        nums[j]=temp;
+    }
+}
+
+692. 前K个高频单词
+O(nlogk) O(n)
+class Solution {
+    public List<String> topKFrequent(String[] words, int k) {
+        if(words==null||words.length==0) return null;
+        List<String> res=new ArrayList<>();
+        Map<String,Integer> map=new HashMap<>();
+        for(String i:words) map.put(i,map.getOrDefault(i,0)+1);
+
+        PriorityQueue<String> maxheap=new PriorityQueue<>((a,b)->map.get(a).equals(map.get(b))?b.compareTo(a):map.get(a)-map.get(b));
+        for(String m:map.keySet()){
+            maxheap.offer(m);
+            if(maxheap.size()>k) maxheap.poll();
+        }
+
+        while(!maxheap.isEmpty()) res.add(maxheap.poll());
+        Collections.reverse(res);
+        return res;
+    }
+}
+
+Top K Frequently Mentioned Keywords
+k = 2
+keywords = ["anacell", "betacellular", "cetracular", "deltacellular", "eurocell"]
+reviews = [
+  "I love anacell Best services; Best services provided by anacell",
+  "betacellular has great services",
+  "deltacellular provides much better services than betacellular",
+  "cetracular is worse than anacell",
+  "Betacellular is better than deltacellular.",
+]
+Output:
+["betacellular", "anacell"]
+
+public static List<String> TopK(int k, String[] keywords, String[] reviews) {
+    List<String> res=new ArrayList<>();
+    Set<String> set=new HashSet<>(Arrays.asList(keywords));
+    Map<String,Integer> map=new HashMap<>();
+
+    for(String i:reviews){
+        String[] strs=i.split("\\W");
+        Set<String> added=new HashSet<>();//每条评论只算一个
+        for(String s:strs){
+            s=s.toLowerCase();
+            if(set.contains(s)&&!added.contains(s)){
+                map.put(s,map.getOrDefault(s,0)+1);
+                added.add(s);
+            }
+        }
+    }
+    Queue<String> maxHeap=new PriorityQueue<>((a,b)->map.get(a).equals(map.get(b))?b.compareTo(a):map.get(a)-map.get(b));
+    for(String s:map.keySet()){
+        maxHeap.offer(s);
+        if(maxHeap.size()>k) maxHeap.poll();
+    }
+    while(!maxHeap.isEmpty()) res.add(maxHeap.poll());
+    //Collections.reverse(res);
+    return res;
+}
+
+Maximum Units
+class Solution {
+    public int getMaxUnit(int num, ArrayList<Integer> boxes, int unitSize, ArrayList<Integer> unitsPerBox, long truckSize){
+        Queue<Integer> q=new PriorityQueue<>();
+        for(int i=0;i<num;i++){
+            int n=boxes.get(i);
+            for(int j=0;j<n;j++){
+                q.offer(unitsPerBox.get(i));
+                if(q.size()>truckSize) q.poll();
+            }
+        }
+
+        int res=0;
+        while(!q.isEmpty()) res+=q.poll();
+        return res;
+    }
+}
+
+3-Way QuickSort，QuickSort优化版本，将数组分成三段，<pivot，=pivot，>pivot
+75. 颜色分类
+class Solution {
+    //[0,p1]为0,[p2,len]为2
+    public void sortColors(int[] nums) {
+        int p1=0,p2=nums.length-1,cur=0;
+        while(cur<=p2){
+            if(nums[cur]>1) swap(nums,cur,p2--);
+            else if(nums[cur]<1) swap(nums,cur++,p1++);
+            else cur++;
+        }
+    }
+    private void swap(int[] nums, int i, int j) {
+        int temp=nums[i];
+        nums[i]=nums[j];
+        nums[j]=temp;
+    }
+}
+
+280. 摆动排序
+class Solution {
+    public void wiggleSort(int[] nums) {
+        for (int i=1;i<nums.length;i++) {
+            if((i%2==1&&nums[i]<nums[i-1]) || (i%2==0&&nums[i]>nums[i-1])) {
+                swap(nums,i,i-1);
+            }
+        }
+    }
+}
+
+324. 摆动排序 II
+class Solution {
+    public void wiggleSort(int[] nums) {
+        int len=nums.length;
+        int[] copy=Arrays.copyOf(nums,len);
+        int k=(len-1)/2,j=len-1;
+        Arrays.sort(copy);
+        for(int i=0;i<len;i++){
+            nums[i]=((i&1)==1)?copy[j--]:copy[k--];
+        }
+    }
+}
+
+//O(n) O(1)
+class Solution {
+    public int len;
+    public void wiggleSort(int[] nums) {
+        len=nums.length;
+        quickSelect(nums,0,nums.length-1,(len-1)/2);
+
+        int p1=0,p2=len-1,i=0,mid=nums[(len-1)/2];
+        while(i<=p2){
+            if(nums[reidx(i)]<mid) swap(nums,reidx(i),reidx(p2--));
+            else if(nums[reidx(i)]>mid) swap(nums,reidx(i++),reidx(p1++));
+            else i++;
+        }
+    }
+    public int reidx(int i){//虚地址
+        return (2*i+1)%(len|1);
+    }
+    public int quickSelect(int[] nums, int l, int r, int target){
+        int cur=partition(nums,l,r);
+        if(cur==target) return nums[cur];
+        else if(cur<target) return quickSelect(nums,cur+1,r,target);
+        else return quickSelect(nums,l,r-1,target);
+    }
+    public int partition(int[] nums, int l, int r){
+        int p=nums[l],i=l,j=r;
+        while(i<j){
+            while(i<j&&nums[j]>=p) j--;
+            while(i<j&&nums[i]<=p) i++;
+            swap(nums,i,j);
+        }
+        swap(nums,l,i);
+        return i;
+    }
+    public void swap(int[] nums,int i,int j){
+        int temp=nums[i];
+        nums[i]=nums[j];
+        nums[j]=temp;
+    }
+}

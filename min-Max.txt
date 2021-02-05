@@ -1,0 +1,460 @@
+//二分查找
+最小化最大值 return l
+最大化最小值 return l-1
+
+最小化最大值
+875. 爱吃香蕉的珂珂
+class Solution {
+    public int minEatingSpeed(int[] piles, int H) {
+        int l=1,r=0;
+        for(int i:piles) if(i>r) r=i;
+
+        while(l<r){
+            int m=l+((r-l)>>>1);
+            if(maxH(piles,m)>H) l=m+1;
+            else r=m;
+        }
+        return l;
+    }
+    public int maxH(int[] piles,int K){
+        int cnt=0;
+        for(int i:piles){
+            cnt+=(i-1)/K+1;
+        }
+        return cnt;
+    }
+}
+
+1300. 转变数组后最接近目标值的数组和
+class Solution {
+    public int findBestValue(int[] arr, int target) {
+        int l=1,r=0;
+        for(int i:arr) if(i>r) r=i;
+
+        while(l<r){
+            int m=l+((r-l)>>>1);
+            if(maxSum(arr,m)<target) l=m+1;
+            else r=m;
+        }
+        return maxSum(arr,l)-target>=target-maxSum(arr,l-1)?l-1:l;
+    }
+    public int maxSum(int[] arr,int k){
+        int sum=0;
+        for(int i:arr) sum+=Math.min(i,k);
+        return sum;
+    }
+}
+
+class Solution {
+    public int findBestValue(int[] arr, int target) {
+        Arrays.sort(arr);
+        int preSum=0,len=arr.length;
+        for(int i=0;i<len;i++){
+            int x=(target-preSum)/(len-i);
+            if(x<arr[i]){
+                float t=((float)(target-preSum))/(len-i);
+                return t-x>0.5?x+1:x;
+            }
+            preSum+=arr[i];
+        }
+        return arr[len-1];
+    }
+}
+
+1011. 在 D 天内送达包裹的能力
+class Solution {
+    public int shipWithinDays(int[] weights, int D) {
+        int max=0,sum=0;
+        for(int i:weights){ sum+=i; if(i>max) max=i;}
+
+        int l=max,r=sum;
+        while(l<r){
+            int m=l+((r-l)>>>1);
+            if(check(weights,m)>D) l=m+1;
+            else r=m;
+        }
+        return l;
+    }
+    public int check(int[] weights,int k){
+        int cnt=1,sum=0;
+        for(int i=0;i<weights.length;i++){
+            if(sum+weights[i]>k){
+                cnt++;
+                sum=0;
+            }
+            sum+=weights[i];
+        }
+        return cnt;
+    }
+}
+
+410. 分割数组的最大值
+//O(nlog(n))
+class Solution {
+    //限制一个最大子数组和max,至少可以将nums分割成几个子数组
+    public int splitArray(int[] nums, int m) {
+        int max=0,sum=0;
+        for(int i:nums){ sum+=i; if(i>max) max=i;}
+
+        int l=max,r=sum;
+        while(l<r){
+            int mid=(l+r)>>>1;
+            if(split(nums,mid,m)) l=mid+1;
+            else r=mid;
+        }
+        return l;
+    }
+    //在每个子数组和不超过max条件下,计算nums至少可以分割成几个子数组
+    public boolean split(int[] nums,int mid,int m) {
+        int cnt=1,sum=0;
+        for(int i:nums){
+            if(sum+i>mid){
+                cnt++;
+                sum=i;
+            }else sum+=i;
+        }
+        return cnt>m;
+    }
+}
+
+1482. 制作 m 束花所需的最少天数
+class Solution {
+    public int minDays(int[] bloomDay, int m, int k) {
+        if(m*k>bloomDay.length) return -1;
+        int l=0,r=0;
+        for(int i:bloomDay) if(r<i) r=i;
+
+        while(l<r){
+            int mid=l+((r-l)>>>1);
+            if(check(bloomDay,m,k,mid)) r=mid;
+            else l=mid+1;
+        }
+        return l;
+    }
+    public boolean check(int[] bloomDay,int m,int k,int cur){
+        int pre=k;
+        for(int i=0;i<bloomDay.length;i++){
+            if(bloomDay[i]<=cur){
+                if(--pre==0){
+                    m--;
+                    pre=k;
+                }
+            }else pre=k;
+        }
+        return m<=0;
+    }
+}
+
+LCP 12. 小张刷题计划
+class Solution {
+    public int minTime(int[] time, int m) {
+        int l=0,r=0;
+        for(int i:time) r+=i;
+
+        while(l<r){
+            int mid=l+((r-l)>>>1);
+            if(check(time,m,mid)) r=mid;
+            else l=mid+1;
+        }
+        return l;
+    }
+    public boolean check(int[] time,int m,int k){
+        int cnt=0,sum=0,max=0;
+        for(int i:time){
+            sum+=i;
+            max=Math.max(max,i);
+            if(sum-max>k){
+                if(++cnt==m) return false;
+                sum=i;
+                max=i;
+            }
+        }
+        return true;
+    }
+}
+
+774. 最小化去加油站的最大距离
+class Solution {
+    public double minmaxGasDist(int[] stations, int K) {
+        double l=0,r=1e8;
+        while(r-l>1e-6){
+            double mid=(l+r)*0.5;
+            if(!check(stations,K,mid)) l=mid;
+            else r=mid;
+        }
+        return l;
+    }
+    public boolean check(int[] sweetness,int K,double mid){
+        int cnt=0;
+        for(int i=1;i<sweetness.length;i++){
+            cnt+=(sweetness[i]-sweetness[i-1])/mid;
+        }
+        return cnt<=K;
+    }
+}
+
+最大化最小值
+1231. 分享巧克力
+class Solution {
+    public int maximizeSweetness(int[] sweetness, int K) {
+        int l=1,r=(int)1e5;
+        K++;
+        while(l<r){
+            int mid=l+((r-l)>>1);
+            if(check(sweetness,K,mid)) l=mid+1;
+            else r=mid;
+        }
+        return l-1;
+    }
+    public boolean check(int[] sweetness,int K,int mid){
+        int sum=0,cnt=0;
+        for(int i=0;i<sweetness.length;i++){
+            sum+=sweetness[i];
+            if(sum>=mid) {
+                cnt++;
+                sum=0;
+            }
+        }
+        return cnt>=K;
+    }
+}
+
+1552. 两球之间的磁力
+class Solution {
+    public int maxDistance(int[] position, int m) {
+        Arrays.sort(position);
+        int l=1,r=(int)1e9;
+        while(l<r){
+            int mid=(l+r)>>>1;
+            if(check(position,m,mid)) l=mid+1;
+            else r=mid;
+        }
+        return l-1;
+    }
+    public boolean check(int[] position,int m,int mid){
+        int pre=0,cnt=0;
+        for(int i=1;i<position.length;i++){
+            if(position[i]-position[pre]>=mid){
+                pre=i;
+                cnt++;
+                if(cnt>=m-1) return true;
+            }
+        }
+        return false;
+    }
+}
+
+1648. 销售价值减少的颜色球
+class Solution {
+    public int maxProfit(int[] inventory, int orders) {
+        long l=0,r=(long)1e9;
+        while(l<r){
+            long mid=l+((r-l)>>>1);
+            if(check(inventory,orders,mid)) l=mid+1;
+            else r=mid;
+        }
+
+        long res=0,cnt=0;
+        for(int i:inventory){
+            if(i>l){
+                cnt+=(long)i-l;
+                res+=((long)i+l+1)*((long)i-l)/2;
+            }
+        }
+        res+=l*((long)orders-cnt);
+
+        return (int)(res%((long)(1e9+7)));
+    }
+    public boolean check(int[] inventory,int orders,long mid){
+        long cnt=0;
+        for(int i:inventory){
+            if(i>mid) cnt+=(long)i-mid;
+        }
+        return cnt>orders;
+    }
+}
+
+1102. 得分最高的路径 四个方向
+class Solution {
+    public int maximumMinimumPath(int[][] matrix) {
+        if(matrix==null||matrix.length==0) return 0;
+        int n=matrix.length, m=matrix[0].length;
+        int[][] dirs={{1,0},{-1,0},{0,1},{0,-1}};
+        int res=matrix[0][0];
+        boolean[][] visited=new boolean[n][m];
+        PriorityQueue<int[]> q=new PriorityQueue<>((a,b)->(matrix[b[0]][b[1]]-matrix[a[0]][a[1]]));
+        q.add(new int[]{0,0});
+        visited[0][0]=true;
+        while(!q.isEmpty()){
+            int x=q.peek()[0];
+            int y=q.peek()[1];
+            q.poll();
+            res=Math.min(res,matrix[x][y]);
+            if(x==n-1&&y==m-1) return res;
+            for(int[] d:dirs){
+                int i=d[0]+x;
+                int j=d[1]+y;
+                if(i<0||j<0||i>=n||j>=m||visited[i][j]) continue;
+                q.add(new int[]{i,j});
+                visited[i][j]=true;
+            }
+        }
+        return res;
+    }
+}
+
+class Solution {
+    public int maximumMinimumPath(int[][] matrix) {
+        if(matrix==null||matrix.length==0) return 0;
+        int n=matrix.length,m=matrix[0].length;
+        int[][] dirs={{1,0},{-1,0},{0,1},{0,-1}};
+        int l=0,r=(int)1e9;
+        while(l<r){
+            int mid=(l+r)>>>1;
+            boolean[][] visited=new boolean[n][m];
+            Queue<int[]> q=new LinkedList<>();
+            q.add(new int[]{0,0});
+            visited[0][0]=true;
+            while(!q.isEmpty()) {
+                int x=q.peek()[0];
+                int y=q.peek()[1];
+                q.poll();
+                if(x==n-1&&y==m-1) break;
+                for(int[] d:dirs) {
+                    int i=d[0]+x;
+                    int j=d[1]+y;
+                    if(i<0||j<0||i>=n||j>=m||visited[i][j]||matrix[i][j]<mid) continue;
+                    q.add(new int[]{i,j});
+                    visited[i][j]=true;
+                }
+            }
+            if(visited[n-1][m-1]) l=mid+1;
+            else r=mid;
+        }
+        return l-1;
+    }
+}
+
+Max Of Min Altitudes  只能向右向下，不包含第一个最后一个
+class Solution {
+    public int maximumMinimumPath(int[][] grid) {
+        if(grid.length==0) return 0;
+        int n=grid.length,m=grid[0].length;
+        int[][] dp=new int[n][m];
+        dp[0][0]=Integer.MAX_VALUE;
+        for(int i=1;i<n;i++) dp[i][0]=Math.min(dp[i-1][0],grid[i][0]);
+        for(int i=1;i<m;i++) dp[0][i]=Math.min(dp[0][i-1],grid[0][i]);
+
+        for(int i=1;i<n;i++){
+            for(int j=1;j<m;j++){
+                if(i==n-1&&j==m-1) dp[i][j]=Math.max(dp[i-1][j],dp[i][j-1]);
+                else dp[i][j]=Math.min(Math.max(dp[i-1][j],dp[i][j-1]),grid[i][j]);
+            }
+        }
+        return dp[n-1][m-1];
+    }
+}
+
+64. 最小路径和 只能向右向下
+class Solution {
+    public int minPathSum(int[][] grid) {
+        if(grid.length==0) return 0;
+        int n=grid.length,m=grid[0].length;
+
+        int[][] dp=new int[n][m];
+        for(int i=0;i<n;i++){
+            for(int j=0;j<m;j++){
+                if(i==0&&j==0) dp[i][j]=grid[i][j];
+                else if(i==0) dp[i][j]=dp[i][j-1]+grid[i][j];
+                else if(j==0) dp[i][j]=dp[i-1][j]+grid[i][j];
+                else dp[i][j]=Math.min(dp[i-1][j],dp[i][j-1])+grid[i][j];
+            }
+        }
+        return dp[n-1][m-1];
+    }
+}
+
+1631. 最小体力消耗路径
+//给定最大限制，看起点和终点是否联通
+class Solution {
+    public int minimumEffortPath(int[][] heights) {
+        if (heights.length==0) return 0;
+        int m=heights.length, n=heights[0].length;
+        int[][] dirs={{1,0},{-1,0},{0,1},{0,-1}};
+        boolean[][] visited=new boolean[m][n];
+        int l=0,r=(int)1e6;
+        while(l<r){
+            int mid=(l+r)>>>1;
+            Queue<int[]> q=new LinkedList<>();
+            q.offer(new int[]{0,0});
+            for(int i=0;i<m;i++) {
+                Arrays.fill(visited[i], false);
+            }
+            visited[0][0]=true;
+            while(!q.isEmpty()){
+                int[] cur=q.poll();
+                for(int[] d:dirs){
+                    int x=cur[0]+d[0];
+                    int y=cur[1]+d[1];
+                    if(x<0||x>=m||y<0||y>=n||visited[x][y]) continue;
+                    if(Math.abs(heights[x][y]-heights[cur[0]][cur[1]])>mid) continue;
+                    visited[x][y]=true;
+                    q.offer(new int[]{x,y});
+                }
+            }
+            if(visited[m-1][n-1]) r=mid;
+            else l=mid+1;
+        }
+        return l;
+    }
+}
+
+class Solution {
+    private int[] parent;
+    private int[] size;
+    public int minimumEffortPath(int[][] heights) {
+        if (heights.length==0) return 0;
+        int m=heights.length, n=heights[0].length;
+        parent=new int[m*n];
+        size=new int[m*n];
+        Arrays.fill(parent,-1);
+        Arrays.fill(size,1);
+
+        List<int[]> edges=new ArrayList<>();
+        for(int i=0;i<m;i++){
+            for(int j=0;j<n;j++){
+                int idx=i*n+j;
+                if(i>0) edges.add(new int[]{idx-n,idx,Math.abs(heights[i][j]-heights[i-1][j])});
+                if(j>0) edges.add(new int[]{idx-1,idx,Math.abs(heights[i][j]-heights[i][j-1])});
+            }
+        }
+        Collections.sort(edges,(a,b)->(a[2]-b[2]));
+
+        for(int[] e:edges){
+            union(e[0],e[1]);
+            if(connected(0,m*n-1)) return e[2];
+        }
+        return 0;
+    }
+    private void swap(int[] nums, int i, int j) {
+        int temp=nums[i];
+        nums[i]=nums[j];
+        nums[j]=temp;
+    }
+    public int find(int x){
+        return parent[x]==-1?x:find(parent[x]);
+    }
+    public void union(int x,int y){
+        int xp=find(x);
+        int yp=find(y);
+        if(xp==yp) return;
+        if(size[xp]<size[yp]) swap(size,xp,yp);
+        parent[yp]=xp;
+        size[xp]+=size[yp];
+    }
+    public boolean connected(int x,int y){
+        return find(x)==find(y);
+    }
+}
+
+

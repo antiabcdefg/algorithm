@@ -1,0 +1,946 @@
+二分图/染色法
+如果可以用两种颜色对图中的节点进行着色，并且保证相邻节点颜色不同，那么图为二分图
+
+785. 判断二分图
+class Solution {
+    public boolean isBipartite(int[][] graph) {
+        int n=graph.length;
+        if(n==0) return true;
+        int[] color=new int[n];
+        Queue<Integer> q=new LinkedList<>();
+        for(int i=0;i<n;i++){
+            if(color[i]==0){
+                q.offer(i);
+                color[i]=1;
+            }
+            while(!q.isEmpty()){
+                int cur=q.poll();
+                for(int w:graph[cur]){
+                    if(color[w]==color[cur]) return false;
+                    if(color[w]==0){
+                        q.offer(w);
+                        color[w]=-color[cur];
+                    }
+                }
+            }
+        }
+        return true;
+   }
+}
+
+class Solution {
+    public boolean isBipartite(int[][] graph) {
+        int[] color=new int[graph.length];
+        for(int i=0;i<graph.length;i++){
+            if(color[i]==0&&!dfs(graph,i,1,color)) return false;
+        }
+        return true;
+   }
+   public boolean dfs(int[][] graph,int i,int cur,int[] color){
+        if(color[i]!=0) return color[i]==cur;
+        color[i]=cur;
+        for(int w:graph[i]){
+            if(!dfs(graph,w,-cur,color)) return false;
+        }
+        return true;
+   }
+}
+
+class Solution {
+    int[] parents;
+    public boolean isBipartite(int[][] graph) {
+        int n=graph.length;
+        parents=new int[n];
+        Arrays.fill(parents,-1);
+        for(int i=0;i<graph.length;i++){
+            int[] cur=graph[i];
+            for(int w:cur){
+                if(find(i)==find(w)) return false;
+                union(cur[0],w);
+            }
+        }
+        return true;
+   }
+    public int find(int x){
+        return parents[x]==-1?x:find(parents[x]);
+    }
+    public void union(int i,int j){
+        int x=find(i),y=find(j);
+        if(x!=y) parents[x]=y;
+    }
+}
+
+1615. 最大网络秩   任意两点最大出入度
+class Solution {
+    public int maximalNetworkRank(int n, int[][] roads) {
+        int[][] graph=new int[n][n];
+        int[] deg=new int[n];
+        for(int[] r:roads){
+            graph[r[0]][r[1]]=graph[r[1]][r[0]]=1;
+            deg[r[0]]++;
+            deg[r[1]]++;
+        }
+        int res=0;
+        for(int i=0;i<n;i++){
+            for(int j=i+1;j<n;j++){
+                res=Math.max(res,deg[i]+deg[j]-graph[i][j]);
+            }
+        }
+        return res;
+    }
+}
+
+1059. 从始点到终点的所有路径  终点只有一个，且没有环
+//判断图中是否有环 染色法
+class Solution {
+    public boolean leadsToDestination(int n,int[][] edges, int src,int des) {
+        boolean[] visited=new boolean[n];
+        List<Integer>[] graph = new List[n];
+        for(int[] e:edges){
+            if(graph[e[0]]==null) graph[e[0]]=new ArrayList<>();
+            graph[e[0]].add(e[1]);
+        }
+        return dfs(graph,src,des,visited);
+    }
+    public boolean dfs(List<Integer>[] graph,int src,int des,boolean[] visited){
+        if(graph[src]==null||graph[src].size()==0) return src==des;
+        visited[src]=true;
+        for(int next:graph[src]){
+            if(visited[next]) return false;//判断环
+            if(!visited[next]&&!dfs(graph,next,des,visited)) return false;//没访问过且返回不等于des
+            visited[next]=false;
+        }
+        return true;
+    }
+}
+
+
+
+Union-find连通图
+用于查找连通部分个数
+
+323. 无向图中连通分量的数目
+547. 朋友圈
+class Solution {
+    public int findCircleNum(int[][] M) {
+        int[] visited=new int[M.length];
+        int cnt=0;
+        for(int i=0;i<M.length;i++){
+            if(visited[i]==0){
+                dfs(M,visited,i);
+                cnt++;
+            }
+        }
+        return cnt;
+    }
+    public void dfs(int[][] M,int[] visited,int i){
+        for(int j=0;j<M.length;j++){
+            if(M[i][j]==1&&visited[j]==0){
+                visited[j]=1;
+                dfs(M,visited,j);
+            }
+        }
+    }
+}
+
+class Solution {
+    public int findCircleNum(int[][] M) {
+        int[] visited=new int[M.length];
+        int cnt=0;
+        Queue<Integer> q=new LinkedList<>();
+        for(int i=0;i<M.length;i++){
+            if(visited[i]==0){
+                q.offer(i);
+                while(!q.isEmpty()){
+                    int cur=q.poll();
+                    visited[cur]=1;
+                    for(int j=0;j<M.length;j++){
+                        if(visited[j]==0&&M[cur][j]==1) q.offer(j);
+                    }
+                }
+                cnt++;
+            }
+        }
+        return cnt;
+    }
+}
+
+//Union-Find
+class Solution {
+    int[] parent;
+    int[] size;
+    public int findCircleNum(int[][] M) {
+        parent=new int[M.length];
+        size=new int[M.length];
+        Arrays.fill(parent,-1);
+        Arrays.fill(size,1);
+
+        for(int i=0;i<M.length;i++){
+            for(int j=0;j<i;j++){
+                if(M[i][j]==1) union(i,j);
+            }
+        }
+        int cnt=0;
+        for(int i:parent)
+            if(i==-1) cnt++;
+        return cnt;
+    }
+    public void union(int i,int j){
+        int x=find(i),y=find(j);
+        if(x!=y) {
+            if(size[x]<size[y]){
+                parent[x]=y;
+                size[y]+=size[x];
+            }else{
+                parent[y]=x;
+                size[x]+=size[y];
+            }
+        }
+    }
+    public int find(int x){
+        return parent[x]==-1?x:find(parent[x]);
+    }
+}
+
+1319. 连通网络的操作次数
+class Solution {
+    List<Integer>[] graph;
+    boolean[] visited;
+    public int makeConnected(int n, int[][] connections) {
+        if(connections.length<n-1) return -1;
+        graph=new ArrayList[n];
+        visited=new boolean[n];
+        for(int i=0;i<n;i++) graph[i]=new ArrayList<>();
+
+        for(int[] c:connections){
+            graph[c[0]].add(c[1]);
+            graph[c[1]].add(c[0]);
+        }
+        int cnt=0;
+        for(int i=0;i<n;i++){
+            if(!visited[i]){
+                dfs(i);
+                cnt++;
+            }
+        }
+        return cnt-1;
+    }
+    public void dfs(int i){
+        visited[i]=true;
+        for(Integer n:graph[i]){
+            if(!visited[n]) dfs(n);
+        }
+    }
+}
+
+class Solution {
+    List<Integer>[] graph;
+    int[] parent;
+    public int makeConnected(int n, int[][] connections) {
+        if(connections.length<n-1) return -1;
+        graph=new ArrayList[n];
+        parent=new int[n];
+        Arrays.fill(parent,-1);
+
+        for(int i=0;i<n;i++) graph[i]=new ArrayList<>();
+        for(int[] c:connections){
+            graph[c[0]].add(c[1]);
+            graph[c[1]].add(c[0]);
+        }
+        int res=n;
+        for(int i=0;i<n;i++){
+            for(int j:graph[i]){
+                if(union(i,j)) res--;
+            }
+        }
+        return res-1;
+
+    }
+    public int find(int x){
+        return parent[x]==-1?x:find(parent[x]);
+    }
+    public boolean union(int i,int j){
+        int x=find(i),y=find(j);
+        if(x!=y){
+            parent[x]=y;
+            return true;
+        }
+        return false;
+    }
+}
+
+684. 冗余连接
+class Solution {
+    int[] parent;
+    public int[] findRedundantConnection(int[][] edges) {
+        parent=new int[edges.length+1];
+        Arrays.fill(parent,-1);
+        for(int[] e:edges){
+            if(!union(e[0],e[1])) return e;
+        }
+        return new int[]{-1,-1};
+    }
+    public int find(int x){
+        return parent[x]==-1?x:find(parent[x]);
+    }
+    public boolean union(int i,int j){
+        int x=find(i),y=find(j);
+        if(x!=y){
+            parent[x]=y;
+            return true;
+        }
+        return false;
+    }
+}
+
+//Union by Rank and Path Compression
+class Solution {
+    int[] parent;
+    int[] size;
+    public int[] findRedundantConnection(int[][] edges) {
+        parent=new int[edges.length+1];
+        size=new int[edges.length+1];
+        for(int i=0;i<=edges.length;i++) parent[i]=i;
+        Arrays.fill(size,1);
+        for(int[] e:edges){
+            if(!union(e[0],e[1])) return e;
+        }
+        return new int[]{-1,-1};
+    }
+    public int find(int x){
+        if(parent[x]!=x) parent[x]=find(parent[x]);
+        return parent[x];
+    }
+    public boolean union(int i,int j){
+        int x=find(i),y=find(j);
+        if(x!=y){
+            if(size[x]<size[y]){
+                parent[x]=y;
+                size[y]+=size[x];
+            }else{
+                parent[y]=x;
+                size[x]+=size[y];
+            }
+            return true;
+        }
+        return false;
+    }
+}
+
+990. 等式方程的可满足性
+class Solution {
+    int[] parent;
+    public boolean equationsPossible(String[] equations) {
+        parent=new int[26];
+        Arrays.fill(parent,-1);
+        for(String e:equations){
+            if(e.charAt(1)=='=') union(e.charAt(0)-'a',e.charAt(3)-'a');
+        }
+        for(String e:equations){
+            if(e.charAt(1)=='!') if(find(e.charAt(0)-'a')==find(e.charAt(3)-'a')) return false;
+        }
+        return true;
+    }
+    public int find(int x){
+        return parent[x]==-1?x:find(parent[x]);
+    }
+    public boolean union(int i,int j){
+        int x=find(i),y=find(j);
+        if(x!=y){
+            parent[x]=y;
+            return true;
+        }
+        return false;
+    }
+}
+
+399. 除法求值
+class Solution {
+    public double[] calcEquation(List<List<String>> equations, double[] values, List<List<String>> queries) {
+        double[] res=new double[queries.size()];
+        Map<String,Map<String,Double>> map=new HashMap<>();
+        for(int i=0;i<equations.size();i++){
+            String a=equations.get(i).get(0),b=equations.get(i).get(1);
+            double cur=values[i];
+            if(!map.containsKey(a)) map.put(a,new HashMap<>());
+            if(!map.containsKey(b)) map.put(b,new HashMap<>());
+            map.get(a).put(b,cur);
+            map.get(b).put(a,1.0/cur);
+        }
+        for(int i=0;i<queries.size();i++){
+            Set<String> visited=new HashSet<>();
+            double cur=dfs(map,queries.get(i).get(0),queries.get(i).get(1),visited);
+            if(cur==0) res[i]=-1.0;
+            else res[i]=cur;
+        }
+        return res;
+    }
+    public double dfs(Map<String,Map<String,Double>> map,String a,String b,Set<String> visited){
+        if(!map.containsKey(a)||!map.containsKey(b)||visited.contains(a)) return 0.0;
+        if(map.get(a).containsKey(b)) return map.get(a).get(b);
+        visited.add(a);
+        for(String c:map.get(a).keySet()){
+            double cur=dfs(map,c,b,visited);
+            if(cur!=0) return map.get(a).get(c)*cur;
+        }
+        visited.remove(a);
+        return 0.0;
+    }
+}
+
+//带权并查集
+class Solution {
+    int[] parent;
+    double[] weights;
+    public double[] calcEquation(List<List<String>> equations, double[] values, List<List<String>> queries) {
+        double[] res=new double[queries.size()];
+        parent=new int[equations.size()*2];
+        weights=new double[equations.size()*2];
+        for(int i=0;i<equations.size()*2;i++){
+            parent[i]=i;
+            weights[i]=1.0;
+        }
+        int idx=0;
+        Map<String,Integer> map=new HashMap<>();
+        for(int i=0;i<equations.size();i++){
+            String a=equations.get(i).get(0),b=equations.get(i).get(1);
+            double val=values[i];
+            if(!map.containsKey(a)) map.put(a,idx++);
+            if(!map.containsKey(b)) map.put(b,idx++);
+            union(map.get(a),map.get(b),val);
+        }
+        for(int i=0;i<queries.size();i++){
+            String a=queries.get(i).get(0),b=queries.get(i).get(1);
+            if(!map.containsKey(a)||!map.containsKey(b)) res[i]=-1.0;
+            else res[i]=isConnected(map.get(a),map.get(b));
+        }
+        return res;
+    }
+    public int find(int x){
+        if(parent[x]!=x){
+            int next=parent[x];
+            parent[x]=find(parent[x]);
+            weights[x]*=weights[next];
+        }
+        return parent[x];
+    }
+    public void union(int i,int j,double v){
+        int x=find(i),y=find(j);
+        if(x!=y){
+            parent[x]=y;
+            weights[x]=weights[j]*v/weights[i];
+        }
+    }
+    public double isConnected(int i,int j){
+        if(find(i)==find(j)) return weights[i]/weights[j];
+        else return -1.0;
+    }
+}
+
+
+
+Minimum Spanning Tree, MST
+Kruskal算法  排序后使用并查集
+Prim算法  利用优先队列选择最小的消耗
+
+1135. Connecting Cities With Minimum Cost
+//Kruskal
+class Solution {
+    int[] parent;
+    public int minimumCost(int n, int[][] edges) {
+        parent=new int[n+1];
+        Arrays.fill(parent,-1);
+
+        Arrays.sort(edges, (a,b)->a[2]-b[2]);
+        int minCost=0,connected=n;
+        for(int[] e:edges){
+            if(union(e[0],e[1])){
+                minCost+=e[2];
+                connected--;
+            }
+            if(connected==1) return minCost;
+        }
+        return -1;
+    }
+    public boolean union(int i,int j){
+        int x=find(i);
+        int y=find(j);
+        if(x!=y){
+            parent[x]=y;
+            return true;
+        }
+        return false;
+    }
+    public int find(int x){
+        return parent[x]==-1?x:find(parent[x]);
+    }
+}
+
+//Prim
+class Solution {
+    public int minimumCost(int n, int[][] edges) {
+        boolean[] visited=new boolean[n+1];
+        List<int[]>[] graph=new ArrayList[n+1];
+        for(int i=0;i<=n;i++) graph[i]=new ArrayList<>();
+        for(int[] e:edges){
+            graph[e[0]].add(new int[]{e[1],e[2]});
+            graph[e[1]].add(new int[]{e[0],e[2]});
+        }
+
+        int minCost=0,connected=n;
+        PriorityQueue<int[]> q=new PriorityQueue<>((a,b)->(a[1]-b[1]));
+        for(int[] e:graph[1]) q.offer(e);
+        visited[1]=true;
+        while(!q.isEmpty()){
+            int nxt=q.peek()[0],cost=q.peek()[1];
+            q.poll();
+            if(!visited[nxt]){
+                visited[nxt]=true;
+                minCost+=cost;
+                connected--;
+                if(connected==1) return minCost;
+                for(int[] e:graph[nxt]) q.offer(e);
+            }
+        }
+        return -1;
+    }
+}
+
+Min Cost to Connect All Nodes
+class Solution {
+    int[] parent;
+    public int minCosttoConnectAllNodes(int n, int[][] edges, int[][] newEdges) {
+        parent=new int[n+1];
+        Arrays.fill(parent,-1);
+        int connected=n;
+        for(int[] e:edges){
+            if(union(e[0],e[1])) connected--;
+        }
+        Arrays.sort(newEdges, (a,b)->a[2]-b[2]);
+
+        int minCost=0;
+        for(int[] e:newEdges){
+            if(union(e[0],e[1])){
+                minCost+=e[2];
+                connected--;
+            }
+            if(connected==1) return minCost;
+        }
+        return -1;
+    }
+    public boolean union(int i,int j){
+        int x=find(i);
+        int y=find(j);
+        if(x!=y){
+            parent[x]=y;
+            return true;
+        }
+        return false;
+    }
+    public int find(int x){
+        return parent[x]==-1?x:find(parent[x]);
+    }
+}
+
+Min Cost to Repair Edges 已连通
+class Solution {
+    int[] parent;
+    public int minCost(int n, int[][] edges, int[][] edgesToRepair) {
+        parent=new int[n+1];
+        Arrays.fill(parent,-1);
+        Arrays.sort(edgesToRepair,(a,b)->a[2]-b[2]);
+        int minCost=0,connected=n;
+
+        for (int[] e:edges) {
+            if (!isBrokenEdge(e,edgesToRepair)&&union(e[0], e[1])){
+                connected--;
+            }
+        }
+
+        for (int[] e:edgesToRepair) {
+            if (union(e[0], e[1])) {
+                minCost+=e[2];
+                connected--;
+            }
+            if (connected==1) return minCost;
+        }
+        return -1;
+    }
+    public boolean isBrokenEdge(int[] e,int[][] edgesToRepair){
+        for(int[] e2:edgesToRepair) if(e[0]==e2[0]&&e[1]==e2[1]) return true;
+        return false;
+    }
+    public boolean union(int i,int j){
+        int x=find(i);
+        int y=find(j);
+        if(x!=y){
+            parent[x]=y;
+            return true;
+        }
+        return false;
+    }
+    public int find(int x){
+        return parent[x]==-1?x:find(parent[x]);
+    }
+}
+
+
+
+
+1192. Critical Connections
+//tarjan算法
+class Solution {
+    public List<List<Integer>> res;
+    public Map<Integer,HashSet<Integer>> dic;
+    public boolean[] visited;
+    public int dfn[];
+    public int low[];
+    public int times;
+    public List<List<Integer>> criticalConnections(int n, List<List<Integer>> connections) {
+        dic=new HashMap();
+        res=new ArrayList<>();
+        visited=new boolean[n];
+        dfn=new int[n];
+        low=new int[n];
+        times=0;
+        for(List<Integer> c:connections){
+            int p1=c.get(0);
+            int p2=c.get(1);
+            if(dic.get(p1)==null) dic.put(p1,new HashSet<>());
+            dic.get(p1).add(p2);
+            if(dic.get(p2)==null) dic.put(p2,new HashSet<>());
+            dic.get(p2).add(p1);
+        }
+        tarjan(0,-1);
+        return res;
+    }
+    public void tarjan(int cur,int pre){
+        times++;
+        dfn[cur]=times;
+        low[cur]=times;
+        visited[cur]=true;
+        for(int node:dic.get(cur)){
+            if(node==pre) continue;
+            if(!visited[node]){
+                tarjan(node,cur);
+                low[cur]=Math.min(low[cur],low[node]);
+                if(low[node]>dfn[cur]){
+                    List<Integer> t=new ArrayList<>();
+                    t.add(cur);
+                    t.add(node);
+                    res.add(t);
+                }
+            }else{
+                low[cur]=Math.min(low[cur],dfn[node]);
+            }
+        }
+    }
+}
+
+
+
+节点最短距离问题
+Dijkstra无负边单源最短路算法
+//求1到其他点最短距离
+class Solution {
+    public int[] dijkstra(int n,int m,int[][] edges) {
+        int[][] graph=new int[n+1][n+1];
+        for(int[] g:graph) Arrays.fill(g,Integer.MAX_VALUE);
+        for(int i=1;i<=n;i++) graph[i][i]=0;
+        for(int[] e:times) graph[e[0]][e[1]]=e[2];//无向图
+
+        boolean[] visited=new boolean[n+1];
+        int[] dis=new int[n+1];
+        for(int i=1;i<=n;i++) dis[i]=graph[1][i];
+        visited[1]=true;
+
+        for(int i=1;i<n;i++) {
+            int min=Integer.MAX_VALUE;
+            int idx=0;
+            for(int j=1;j<=n;j++){
+                if(visited[j]==0&&dis[j]<min){
+                    min=dis[j];
+                    idx=j;
+                }
+            }
+            visited[idx]=1;
+            for(int j=1;j<=n;j++){
+                if(graph[idx][j]<Integer.MAX_VALUE){
+                    if(dis[j]>dis[idx]+graph[idx][j]) dis[j]=dis[idx]+graph[idx][j];
+                }
+            }
+        }
+        return dis;
+    }
+}
+
+Ford单源最短路算法
+
+SPFA Ford算法队列优化
+class Solution {
+    public int[] spfa(int n,int m,int[][] edges) {
+        int[][] graph=new int[n+1][n+1];
+        for(int[] g:graph) Arrays.fill(g,Integer.MAX_VALUE);
+        for(int i=1;i<=n;i++) graph[i][i]=0;
+        for(int[] e:times) graph[e[0]][e[1]]=e[2];//无向图
+
+        int[] dis=new int[n+1];
+        Arrays.fill(dis,Integer.MAX_VALUE);
+        dis[0]=dis[1]=0;
+
+        Queue<Integer> q=new LinkedList<>();
+        q.offer(1);
+        while(!q.isEmpty()){
+            int cur=q.poll();
+            for(int i=1;i<=n;i++){
+                if(graph[cur][i]<Integer.MAX_VALUE){
+                    if(dis[i]>dis[cur]+graph[cur][i]){
+                        dis[i]=dis[cur]+graph[cur][i];
+                        if(!q.contains(i)) q.offer(i);
+                    }
+                }
+            }
+        }
+        return dis;
+    }
+}
+
+Floyd多源最短路径算法
+class Solution {
+    //求任意两点间最短距离
+    public static int[][] floyd(int n,int m,int[][] edges) {
+        int[][] graph=new int[n+1][n+1];
+        for(int[] g:graph) Arrays.fill(g,Integer.MAX_VALUE/2);
+        for(int i=1;i<=n;i++) graph[i][i]=0;
+        for(int[] e:times) graph[e[0]][e[1]]=e[2];
+
+        for(int k=1;k<=n;k++){
+            for(int i=1;i<=n;i++){
+                for(int j=1;j<=n;j++){
+                    if(graph[i][j]>graph[i][k]+graph[k][j]){
+                        graph[i][j]=graph[i][k]+graph[k][j];
+                    }
+                }
+            }
+        }
+        return graph;
+    }
+}
+
+743. 网络延迟时间  有向图
+//Dijkstra
+class Solution {
+    public int networkDelayTime(int[][] times, int N, int K) {
+        int[][] graph=new int[N+1][N+1];
+        for(int[] g:graph) Arrays.fill(g,Integer.MAX_VALUE);
+        for(int i=1;i<=N;i++) graph[i][i]=0;
+        for(int[] e:times) graph[e[0]][e[1]]=e[2];
+
+        boolean[] visited=new boolean[N+1];
+        int[] dis=new int[N+1];
+        for(int i=1;i<=N;i++) dis[i]=graph[K][i];
+        dis[K]=0;
+        visited[K]=true;
+
+        for(int i=1;i<N;i++) {
+            int min=Integer.MAX_VALUE;
+            int idx=0;
+            for(int j=1;j<=N;j++){
+                if(!visited[j]&&dis[j]<min){
+                    min=dis[j];
+                    idx=j;
+                }
+            }
+            visited[idx]=true;
+            for(int j=1;j<=N;j++){
+                if(graph[idx][j]<Integer.MAX_VALUE){
+                    if(dis[j]>dis[idx]+graph[idx][j]) dis[j]=dis[idx]+graph[idx][j];
+                }
+            }
+        }
+        int res=Arrays.stream(dis).max().getAsInt();
+        return res==Integer.MAX_VALUE?-1:res;
+    }
+}
+
+//Floyd
+class Solution {
+    public int networkDelayTime(int[][] times, int N, int K) {
+        int[][] graph=new int[N+1][N+1];
+        for(int[] g:graph) Arrays.fill(g,Integer.MAX_VALUE/2);
+        for(int i=1;i<=N;i++) graph[i][i]=0;
+        for(int[] e:times) graph[e[0]][e[1]]=e[2];
+
+        for(int k=1;k<=N;k++){
+            for(int i=1;i<=N;i++){
+                for(int j=1;j<=N;j++){
+                    if(graph[i][j]>graph[i][k]+graph[k][j]){
+                        graph[i][j]=graph[i][k]+graph[k][j];
+                    }
+                }
+            }
+        }
+        int res=0;
+        for(int i=1;i<=N;i++){
+            if(graph[K][i]==Integer.MAX_VALUE/2) return -1;
+            res=Math.max(res,graph[K][i]);
+        }
+        return res;
+    }
+}
+
+//SPFA
+class Solution {
+    public int networkDelayTime(int[][] times, int N, int K) {
+        int[][] graph=new int[N+1][N+1];
+        for(int[] g:graph) Arrays.fill(g,Integer.MAX_VALUE);
+        for(int i=1;i<=N;i++) graph[i][i]=0;
+        for(int[] e:times) graph[e[0]][e[1]]=e[2];
+
+        int[] dis=new int[N+1];
+        Arrays.fill(dis,Integer.MAX_VALUE);
+        dis[0]=dis[K]=0;
+
+        Queue<Integer> q=new LinkedList<>();
+        q.offer(K);
+        while(!q.isEmpty()){
+            int cur=q.poll();
+            for(int i=1;i<=N;i++){
+                if(graph[cur][i]<Integer.MAX_VALUE){
+                    if(dis[i]>dis[cur]+graph[cur][i]){
+                        dis[i]=dis[cur]+graph[cur][i];
+                        if(!q.contains(i)) q.offer(i);
+                    }
+                }
+            }
+        }
+        int res=Arrays.stream(dis).max().getAsInt();
+        return res==Integer.MAX_VALUE?-1:res;
+    }
+}
+
+
+
+
+
+
+拓扑排序
+207. 课程表
+//检测有向图是否存在环
+//O(N+M) O(N+M) N 和 M 分别为节点数量和临边数量
+class Solution {
+    List<Integer>[] graph;
+    int[] status;
+    public boolean canFinish(int numCourses, int[][] prerequisites) {
+        graph=new List[numCourses];
+        for(int i=0;i<numCourses;i++) graph[i]=new ArrayList<>();
+        for(int[] p:prerequisites) graph[p[0]].add(p[1]);
+
+        status=new int[numCourses];
+        for(int i=0;i<numCourses;i++){
+            if(hasCycle(i)) return false;
+        }
+        return true;
+    }
+    public boolean hasCycle(int i){
+        if(status[i]==1) return true;//本轮再次访问
+        if(status[i]==-1) return false;//已访问
+
+        status[i]=1;
+        for(int next:graph[i]){
+            if(hasCycle(next)) return true;
+        }
+        status[i]=-1;
+        return false;
+    }
+}
+
+210. 课程表 II
+class Solution {
+    public int[] findOrder(int numCourses, int[][] prerequisites) {//BFS
+        if(numCourses==0) return new int[0];
+        int[] inDegrees=new int[numCourses];
+
+        for(int[] i:prerequisites) inDegrees[i[0]]++;
+
+        Queue<Integer> q=new LinkedList<>();
+        for(int i=0;i<inDegrees.length;i++)
+            if(inDegrees[i]==0) q.offer(i);
+
+        int cnt=0;
+        int[] res=new int[numCourses];
+        while(!q.isEmpty()){
+            int cur=q.poll();
+            res[cnt++]=cur;
+            for(int[] i:prerequisites){
+                if(i[1]==cur){
+                    inDegrees[i[0]]--;
+                    if(inDegrees[i[0]]==0) q.offer(i[0]);
+                }
+            }
+        }
+        return cnt==numCourses?res:new int[0];
+    }
+}
+
+class Solution {
+    List<Integer>[] graph;
+    int[] status;
+    Stack<Integer> stk;
+    public int[] findOrder(int numCourses, int[][] prerequisites) {
+        if(numCourses==0) return new int[0];
+
+        graph=new List[numCourses];
+        for(int i=0;i<numCourses;i++) graph[i]=new ArrayList<>();
+        for(int[] p:prerequisites) graph[p[0]].add(p[1]);
+
+        status=new int[numCourses];
+        stk=new Stack<>();
+        for(int i=0;i<numCourses;i++)
+            if(hasCycle(i)) return new int[0];
+
+        int[] res=new int[numCourses];
+        for(int i=numCourses-1;i>=0;i--) res[i]=stk.pop();
+        return res;
+    }
+    public boolean hasCycle(int i){
+        if(status[i]==1) return true;
+        if(status[i]==-1) return false;
+
+        status[i]=1;
+        for(int next:graph[i]){
+            if(hasCycle(next)) return true;
+        }
+        status[i]=-1;
+        stk.push(i);
+        return false;
+    }
+}
+
+882. 细分图中的可到达结点
+class Solution {
+    public int reachableNodes(int[][] edges, int M, int N) {
+        int[][] graph=new int[N][N];
+        for(int[] g:graph) Arrays.fill(g,-1);
+        for(int[] e:edges) graph[e[0]][e[1]]=graph[e[1]][e[0]]=e[2];
+        PriorityQueue<int[]> q=new PriorityQueue<>((a,b)->(b[0]-a[0]));
+        q.offer(new int[]{M,0});
+        boolean[] visited=new boolean[N];
+        int res=0;
+        while(!q.isEmpty()){
+            int[] t=q.poll();
+            int move=t[0],cur=t[1];
+            if(visited[cur]) continue;
+            visited[cur]=true;
+            res++;
+            for(int i=0;i<N;i++){
+                if(graph[cur][i]==-1) continue;
+                if(move>graph[cur][i]&&!visited[i]) q.offer(new int[]{move-graph[cur][i]-1,i});
+                graph[i][cur]-=Math.min(move,graph[cur][i]);
+                res+=Math.min(move,graph[cur][i]);
+            }
+        }
+        return res;
+    }
+}
+

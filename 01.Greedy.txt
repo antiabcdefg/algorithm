@@ -1,0 +1,290 @@
+//保证每次操作都是局部最优的，并且最后得到的结果是全局最优的。
+
+455. 分发饼干
+//O(nlogn) O(1)
+class Solution {
+    public int findContentChildren(int[] g, int[] s) {
+        Arrays.sort(g);
+        Arrays.sort(s);
+        int gi=0,si=0;
+        while(gi<g.length&&si<s.length){
+            if(g[gi]<=s[si++]) gi++;
+        }
+        return gi;
+    }
+}
+
+135. 分发糖果
+//O(n) O(n)
+class Solution {
+    public int candy(int[] ratings) {
+        int n=ratings.length;
+        if(n<2) return n;
+        int[] cnt=new int[n];
+        Arrays.fill(cnt,1);
+        for(int i=1;i<n;i++){
+            if(ratings[i-1]<ratings[i]) cnt[i]=cnt[i-1]+1;
+        }
+        for(int i=n-1;i>0;i--){
+            if(ratings[i-1]>ratings[i]) cnt[i-1]=Math.max(cnt[i]+1,cnt[i-1]);
+        }
+        for(int i=n-1;i>0;i--) cnt[0]+=cnt[i];
+        return cnt[0];
+    }
+}
+
+605. 种花问题
+class Solution {
+    public boolean canPlaceFlowers(int[] flowerbed, int n) {
+        if(flowerbed.length==0) return false;
+        for(int i=0;i<flowerbed.length&&n>=0;i++){
+            if(flowerbed[i]==1) continue;
+            int prev=i==0?0:flowerbed[i-1];
+            int next=i==flowerbed.length-1?0:flowerbed[i+1];
+            if(prev==0&&next==0){
+                n--;
+                flowerbed[i]=1;
+            }
+        }
+        return n<=0;
+    }
+}
+
+763. Partition Labels
+class Solution {
+    public List<Integer> partitionLabels(String S) {
+        int[] last_index=new int[26];
+        for(int i=0;i<S.length();i++)
+            last_index[S.charAt(i)-'a']=i;
+
+        List<Integer> res=new ArrayList<>();
+        int start=0,end=0;
+        for(int i=0;i<S.length();i++){
+            end=Math.max(end,last_index[S.charAt(i)-'a']);
+            if(i==end){
+                res.add(end-start+1);
+                start=end+1;
+            }
+        }
+        return res;
+    }
+}
+
+class Solution {
+    public List<Integer> partitionLabels(String S) {
+        List<Integer> res=new ArrayList<>();
+        int start=0,end=0;
+        for(int i=0;i<S.length();i++){
+            end=Math.max(end,S.lastIndexOf(S.charAt(i)));
+            if(i==end){
+                res.add(end-start+1);
+                start=end+1;
+            }
+        }
+        return res;
+    }
+}
+
+5543. 两个相同字符之间的最长子字符串
+class Solution {
+    public int maxLengthBetweenEqualCharacters(String s) {
+        int res=-1;
+        int[] dic=new int[26];
+        Arrays.fill(dic,-1);
+
+        for(int i=0;i<s.length();i++){
+            int cur=s.charAt(i)-'a';
+            if(dic[cur]==-1) dic[cur]=i;
+            else res=Math.max(res,i-dic[cur]-1);
+        }
+        return res;
+    }
+}
+
+665. 非递减数列
+class Solution {
+    public boolean checkPossibility(int[] nums) {
+        if(nums.length==0) return false;
+        int cnt=0;
+        for(int i=1;i<nums.length;i++){
+            if(nums[i-1]>nums[i]) {
+                cnt++;
+                if(cnt>1) return false;
+                if(i-2>=0&&i+1<nums.length){
+                    if(nums[i+1]<nums[i-1]&&nums[i]<nums[i-2]) return false;
+                }
+            }
+        }
+        return true;
+    }
+}
+
+class Solution {
+    public boolean checkPossibility(int[] nums) {
+        if(nums.length==0) return false;
+        int cnt=0;
+        for(int i=1;i<nums.length;i++){
+            if(nums[i-1]>nums[i]) {
+                cnt++;
+                if(cnt>1) return false;
+                if(i>=2&&nums[i-2]>nums[i]) nums[i]=nums[i-1];
+                else nums[i-1]=nums[i];
+            }
+        }
+        return true;
+    }
+}
+
+406. 根据身高重建队列
+//O(n^2) O(n)
+class Solution {
+    public int[][] reconstructQueue(int[][] people) {
+        if(people.length==0) return new int[][]{};
+        Arrays.sort(people,(a,b)->(a[0]==b[0]?a[1]-b[1]:b[0]-a[0]));
+        LinkedList<int[]> list=new LinkedList<>();
+        for(int[] i:people) list.add(i[1],i);
+        return list.toArray(new int[list.size()][2]);
+    }
+}
+
+392. 判断子序列
+class Solution {
+    public boolean isSubsequence(String s, String t) {
+        int n=s.length(), m=t.length();
+        int i=0,j=0;
+        while(i<n&&j<m){
+            if(s.charAt(i)==t.charAt(j)) i++;
+            j++;
+        }
+        return i==n;
+    }
+}
+
+class Solution {
+    public boolean isSubsequence(String s, String t) {
+        int idx=-1;
+        for(char c:s.toCharArray()){
+            idx=t.indexOf(c,idx+1);
+            if(idx==-1) return false;
+        }
+        return true;
+    }
+}
+
+53. 最大子序和
+class Solution {
+    public int maxSubArray(int[] nums) {
+        if(nums==null||nums.length==0) return 0;
+        int preSum=nums[0];
+        int maxSum=preSum;
+        for(int i=1;i<nums.length;i++){
+            preSum=preSum>0?preSum+nums[i]:nums[i];
+            maxSum=Math.max(maxSum, preSum);
+        }
+        return maxSum;
+    }
+}
+
+1665. 完成所有任务的最少初始能量
+class Solution {
+    public int minimumEffort(int[][] tasks) {
+        Arrays.sort(tasks,(a,b)->((b[1]-b[0])-(a[1]-a[0])));
+        int res=0;
+        for(int[] i:tasks){
+            res+=i[0];
+            if(res<i[1]) res=i[1];
+        }
+        return res;
+    }
+}
+
+1702. 修改后的最大二进制字符串
+class Solution {
+    public String maximumBinaryString(String s) {
+        int k=0;
+        while(k<s.length()&&s.charAt(k)=='1') k++;
+        if(k==s.length()) return s;
+        int cnt=0;
+        for(int i=k+1;i<s.length();i++) if(s.charAt(i)=='0') cnt++;
+        char[] res=new char[s.length()];
+        Arrays.fill(res,'1');
+        res[k+cnt]='0';
+        return new String(res);
+    }
+}
+
+1705. 吃苹果的最大数目
+class Solution {
+    public int eatenApples(int[] apples, int[] days) {
+        PriorityQueue<int[]> q=new PriorityQueue<>((a,b)->(a[1]-b[1]));
+        int res=0;
+        for(int i=0;i<apples.length||!q.isEmpty();i++){
+            if(i<apples.length&&apples[i]!=0) q.offer(new int[]{apples[i],i+days[i]});
+            while(!q.isEmpty()&&q.peek()[1]<=i) q.poll();
+            if(!q.isEmpty()){
+                res++;
+                int[] cur=q.poll();
+                if(--cur[0]>0) q.offer(new int[]{cur[0],cur[1]});
+            }
+        }
+        return res;
+    }
+}
+
+1625. 执行操作后字典序最小的字符串
+class Solution {
+    public String findLexSmallestString(String s, int a, int b) {
+        int len=s.length();
+        String res=s;
+        StringBuilder sb=new StringBuilder(s);
+        if((b&1)==0){
+            for(int i=0;i<10;i++){
+                for(int j=1;j<len;j+=2) addOne(sb,j,a);
+                String cur=sb.toString();
+                for(int j=0;j<len;j++){
+                    cur=cur.substring(len-b)+cur.substring(0,len-b);
+                    if(res.compareTo(cur)>0) res=cur;
+                }
+            }
+        }else{
+            for(int i=0;i<10;i++){
+                for(int j=1;j<len;j+=2) addOne(sb,j,a);
+                for(int k=0;k<10;k++){
+                    for(int j=0;j<len;j+=2) addOne(sb,j,a);
+                    String cur=sb.toString();
+                    for(int j=0;j<len;j++){
+                        cur=cur.substring(len-b)+cur.substring(0,len-b);
+                        if(res.compareTo(cur)>0) res=cur;
+                    }
+                }
+            }
+        }
+        return res;
+    }
+    public void addOne(StringBuilder sb, int j, int a){
+        sb.setCharAt(j,(char)((sb.charAt(j)-'0'+a)%10+'0'));
+    }
+}
+
+//https://www.bilibili.com/video/BV1KK4y1j7kj
+1703. 得到连续 K 个 1 的最少相邻交换次数
+//绝对值, 所有点到中心最小值, 取中位数
+class Solution {
+    public int minMoves(int[] nums, int k) {
+        List<Integer> copy=new ArrayList<>();
+        for(int i=0;i<nums.length;i++) if(nums[i]==1) copy.add(i-copy.size());
+        long[] prefix=new long[copy.size()+1];
+        for(int i=1;i<=copy.size();i++) prefix[i]=prefix[i-1]+copy.get(i-1);
+
+        int res=Integer.MAX_VALUE;
+        for(int i=k;i<=copy.size();i++){
+            int l=i-k,r=i-1;
+            int mid=(l+r)/2;
+            long x=copy.get(mid);
+            long left=x*(mid-l)-(prefix[mid]-prefix[l]);
+            long right=(prefix[r+1]-prefix[mid+1])-x*(r-mid);
+            res=Math.min(res,(int)(left+right));
+        }
+        return res;
+    }
+}

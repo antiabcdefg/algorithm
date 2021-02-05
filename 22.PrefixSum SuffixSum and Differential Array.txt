@@ -1,0 +1,333 @@
+前缀和主要适用的场景是原始数组不会被修改的情况下，频繁查询某个区间的累加和。
+class PrefixSum {
+    int[] prefix;
+    public PrefixSum(int[] nums) {
+        prefix=new int[nums.length+1];
+        for(int i=1;i<prefix.length;i++) prefix[i]=prefix[i-1]+nums[i-1];
+    }
+    public int query(int i, int j) {
+        return prefix[j+1]-prefix[i];
+    }
+}
+
+如果前缀和相同，那么这些节点之间的数总和为0
+
+303. 区域和检索 - 数组不可变
+class NumArray {
+    int[] sums;
+    public NumArray(int[] nums) {
+        sums=new int[nums.length+1];
+        for(int i=1;i<=nums.length;i++) sums[i]=sums[i-1]+nums[i-1];
+    }
+    public int sumRange(int i, int j) {
+        return sums[j+1]-sums[i];
+    }
+}
+
+307. 区域和检索 - 数组可修改  线段树
+
+560. 和为K的子数组
+class Solution {
+    public int subarraySum(int[] nums, int k) {
+        int[] prefix=new int[nums.length+1];
+        for(int i=1;i<prefix.length;i++){
+            prefix[i]=prefix[i-1]+nums[i-1];
+        }
+
+        int cnt=0;
+        for(int i=0;i<prefix.length;i++){
+            for(int j=i+1;j<prefix.length;j++){
+                if(prefix[j]-prefix[i]==k) cnt++;
+            }
+        }
+        return cnt;
+    }
+}
+
+//O(n) O(n)
+class Solution {
+    public int subarraySum(int[] nums, int k) {
+        Map<Integer,Integer> map=new HashMap<>();
+        map.put(0,1);
+
+        int cnt=0;
+        int preSum=0;
+        for(int n:nums){
+            preSum+=n;
+            if(map.containsKey(preSum-k)) cnt+=map.getOrDefault(preSum-k,0);
+            map.put(preSum,map.getOrDefault(preSum,0)+1);
+        }
+        return cnt;
+    }
+}
+
+304. 二维区域和检索 - 矩阵不可变
+class NumMatrix {
+    private int[][] prefix;
+    public NumMatrix(int[][] matrix) {
+        if(matrix.length==0||matrix[0].length==0) return;
+
+        prefix=new int[matrix.length+1][matrix[0].length+1];
+        for(int i=1;i<=matrix.length;i++){
+            for(int j=1;j<=matrix[0].length;j++){
+                prefix[i][j]=prefix[i][j-1]+prefix[i-1][j]-prefix[i-1][j-1]+matrix[i-1][j-1];
+            }
+        }
+    }
+    public int sumRegion(int row1, int col1, int row2, int col2) {
+        return prefix[row2+1][col2+1]-prefix[row2+1][col1]-prefix[row1][col2+1]+prefix[row1][col1];
+    }
+}
+
+1248. 统计「优美子数组」
+class Solution {
+    public int numberOfSubarrays(int[] nums, int k) {
+        int[] prefix=new int[nums.length+1];
+        prefix[0]=1;
+        int cnt=0,preSum=0;
+        for(int n:nums){
+            preSum+=(n&1);
+            prefix[preSum]++;
+            if(preSum-k>=0) cnt+=prefix[preSum-k];
+        }
+        return cnt;
+    }
+}
+
+class Solution {
+    public int numberOfSubarrays(int[] nums, int k) {
+        int l=0,r=0,cnt=0,res=0;
+        while(r<nums.length){
+            cnt+=(nums[r++]&1);
+            if(cnt>=k){
+                int temp=r;
+                while(r<nums.length&&(nums[r]&1)==0) r++;
+                int rcnt=r-temp;
+                int lcnt=0;
+                while((nums[l]&1)==0){
+                    l++;
+                    lcnt++;
+                }
+                res+=(lcnt+1)*(rcnt+1);
+                l++;
+                cnt--;
+            }
+        }
+        return res;
+    }
+}
+
+1652. 拆炸弹
+class Solution {
+    public int[] decrypt(int[] code, int k) {
+        int n=code.length;
+        int[] prefix=new int[n*2];
+        prefix[0]=code[0];
+        for(int i=1;i<n*2;i++) prefix[i]=prefix[i-1]+code[i%n];
+        int[] res=code.clone();
+
+        for(int i=0;i<n;i++){
+            if(k>0) res[i]=prefix[i+k]-prefix[i];
+            else if(k<0) res[i]=prefix[i+n-1]-prefix[i+n-1+k];
+            else res[i]=0;
+        }
+        return res;
+    }
+}
+
+GenomicRangeQuery
+class Solution {
+    public int[] solution(String S, int[] P, int[] Q) {
+        int[][] prefix=new int[S.length()+1][4];
+        for(int i=1;i<=S.length();i++){
+            char c=S.charAt(i-1);
+            if(c=='A') prefix[i][0]=1;
+            else if(c=='C') prefix[i][1]=1;
+            else if(c=='G') prefix[i][2]=1;
+            else if(c=='T') prefix[i][3]=1;
+            for(int j=0;j<4;j++) prefix[i][j]+=prefix[i-1][j];
+        }
+        int[] res=new int[P.length];
+        for(int i=0;i<P.length;i++){
+            int min=4;
+            for(int j=0;j<4;j++){
+                int cur=prefix[Q[i]+1][j]-prefix[P[i]][j];
+                if(cur>0){
+                    res[i]=j+1;
+                    break;
+                }
+            }
+        }
+        return res;
+    }
+}
+
+1664. 生成平衡数组的方案数
+class Solution {
+    public int waysToMakeFair(int[] nums) {
+        int cnt=0,n=nums.length;
+        int[] odd=new int[n+1];
+        int[] even=new int[n+1];
+        for(int i=1;i<=n;i++){
+            odd[i]=odd[i-1];
+            even[i]=even[i-1];
+            if(i%2==0) even[i]+=nums[i-1];
+            else odd[i]+=nums[i-1];
+        }
+        for(int i=1;i<=n;i++){
+            int o=odd[i-1]+even[n]-even[i];
+            int e=even[i-1]+odd[n]-odd[i];
+            if(o==e) cnt++;
+        }
+        return cnt;
+    }
+}
+
+//滑动窗口
+1658. 将 x 减到 0 的最小操作数
+class Solution {
+    public int minOperations(int[] nums, int x) {
+        int n=nums.length,res=n+1;
+        int[] pre=new int[n+1];
+        int[] suf=new int[n+1];
+
+        for(int i=1;i<n+1;i++){
+            pre[i]=pre[i-1]+nums[i-1];
+            suf[n-i]=suf[n-i+1]+nums[n-i];
+            if(pre[i]==x) res=Math.min(res,i);
+            if(suf[i]==x) res=Math.min(res,n-i);
+        }
+        if(suf[0]<x) return -1;
+
+        for(int i=0,j=1;i<n;i++){
+            j=Math.max(j,i+1);
+            while(j<n+1&&pre[i]+suf[j]>x) j++;
+            if(j<n+1&&pre[i]+suf[j]==x) res=Math.min(res,i+n-j);
+        }
+        return res>n?-1:res;
+    }
+}
+
+437. 路径总和 III
+class Solution {
+    public int pathSum(TreeNode root, int sum) {
+        Map<Integer,Integer> prefix=new HashMap<>();
+        prefix.put(0,1);
+        return dfs(root, prefix, sum, 0);
+    }
+    public int dfs(TreeNode node, Map<Integer,Integer> prefix, int target, int cur) {
+        if(node==null) return 0;
+        int res=0;
+        cur+=node.val;
+        if(prefix.containsKey(cur-target)) res+=prefix.getOrDefault(cur-target, 0);
+        prefix.put(cur, prefix.getOrDefault(cur, 0)+1);
+
+        res+=dfs(node.left,prefix,target,cur);
+        res+=dfs(node.right,prefix,target,cur);
+        prefix.put(cur, prefix.get(cur)-1);
+        return res;
+    }
+}
+
+
+
+
+
+
+
+
+差分数组的主要适用场景是频繁对原始数组的某个区间的元素进行增减。
+差分数组diff[0...i]的和就是res[i]
+[l, r]区间加上v, 只需要diff[l]+=v, diff[r+1]-=v
+
+class Difference {
+    int[] diff;
+    public Difference(int[] nums) {
+        diff=new int[nums.length];
+        diff[0]=nums[0];
+        for(int i=1;i<nums.length;i++) diff[i]=nums[i]-nums[i-1];
+    }
+    /* 给闭区间 [i,j] 增加 val(可以是负数)*/
+    public void increment(int i, int j, int val) {
+        diff[i]+=val;
+        if(j+1<diff.length) diff[j+1]-=val;
+    }
+    public int[] result() {
+        int[] res=new int[diff.length];
+        res[0]=diff[0];
+        for(int i=1;i<diff.length;i++) res[i]=res[i-1]+diff[i];
+        return res;
+    }
+}
+
+二维
+public void increment(int x1, int y1, int x2, int y2, int val) {
+    diff[x1][y1] += val;
+    diff[x2+1][y1] -= val;
+    diff[x1][y2+1] -= val;
+    diff[x2+1][y2+1] += val;
+}
+
+1109. 航班预订统计
+class Solution {
+    public int[] corpFlightBookings(int[][] bookings, int n) {
+        int[] diff=new int[n];
+        for(int[] b:bookings){
+            diff[b[0]-1]+=b[2];
+            if(b[1]<diff.length) diff[b[1]]-=b[2];
+        }
+        for(int i=1;i<diff.length;i++) diff[i]+=diff[i-1];
+        return diff;
+    }
+}
+
+1674. 使数组互补的最少操作次数
+//nums[i]+nums[n−1−i]范围是[1+min(a,b), limit+max(a,b)]
+class Solution {
+    public int minMoves(int[] nums, int limit) {
+        int n=nums.length;
+        int[] diff=new int[limit*2+2];
+        for(int i=0;i<n/2;i++){
+            int a=nums[i],b=nums[n-1-i];
+            int l=1+Math.min(a,b);
+            int r=limit+Math.max(a,b);
+            int sum=a+b;
+
+            diff[2]+=2;diff[2*limit+1]-=2;
+            diff[l]--;diff[r+1]++;
+            diff[sum]--;diff[sum+1]++;
+        }
+        int res=n,sum=0;
+        for(int i=2;i<=2*limit;i++){
+            sum+=diff[i];
+            if(sum<res) res=sum;
+        }
+        return res;
+    }
+}
+
+//nums[i]+nums[n−1−i]范围是[1+min(a,b), limit+max(a,b)]
+class Solution {
+    public int minMoves(int[] nums, int limit) {
+        int n=nums.length;
+        int[] diff=new int[limit*2+2];
+        for(int i=0;i<n/2;i++){
+            int a=nums[i],b=nums[n-1-i];
+
+            int l=2,r=2*limit;
+            diff[l]+=2;diff[r+1]-=2;
+
+            l=1+Math.min(a,b);r=limit+Math.max(a,b);
+            diff[l]+=-1;diff[r+1]-=-1;
+
+            l=a+b;r=a+b;
+            diff[l]+=-1;diff[r+1]-=-1;
+        }
+        int res=n,sum=0;
+        for(int i=2;i<=2*limit;i++){
+            sum+=diff[i];
+            if(sum<res) res=sum;
+        }
+        return res;
+    }
+}

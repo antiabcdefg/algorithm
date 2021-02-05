@@ -1,0 +1,89 @@
+295. 数据流的中位数
+//获取时间复杂度O(1)，更新时间复杂度O(log(n)), 空间复杂度O(n)
+class MedianFinder {
+    public PriorityQueue<Integer> minHeap, maxHeap;
+    public MedianFinder() {
+        minHeap=new PriorityQueue<>();
+        maxHeap=new PriorityQueue<>((a,b)->(b.compareTo(a)));
+        //maxHeap=new PriorityQueue<>(Collections.reverseOrder());
+    }
+    public void addNum(int num) {
+        maxHeap.add(num);
+        minHeap.add(maxHeap.poll());
+        if(minHeap.size()>maxHeap.size()) maxHeap.add(minHeap.poll());
+    }
+    public double findMedian() {
+        if(minHeap.size()==maxHeap.size()) return (minHeap.peek()+maxHeap.peek())*0.5;
+        return maxHeap.peek();
+    }
+}
+
+4. 寻找两个正序数组的中位数
+class Solution {
+    public double findMedianSortedArrays(int[] nums1, int[] nums2) {
+        int m=nums1.length,n=nums2.length;
+        int med=(m+n)>>>1;
+        int i=0,j=0;
+
+        int cnt=-1;
+        int[] res=new int[]{0,0};
+        while(cnt<med){
+            cnt++;
+            if(i==m) res[cnt&1]=nums2[j++];
+            else if(j==n) res[cnt&1]=nums1[i++];
+            else if(nums1[i]<nums2[j]) res[cnt&1]=nums1[i++];
+            else res[cnt&1]=nums2[j++];
+        }
+        if(((m + n)&1)==1) return res[med&1];
+        return (res[0]+res[1])/2.0;
+    }
+}
+
+class Solution {
+    //https://leetcode-cn.com/problems/median-of-two-sorted-arrays/solution/he-bing-yi-hou-zhao-gui-bing-guo-cheng-zhong-zhao-/
+    //单数数组中位数是左边最大，偶数数组中位数是(左边最大+右边最小)/2
+    public double findMedianSortedArrays(int[] nums1, int[] nums2) {
+        if(nums1.length>nums2.length) return findMedianSortedArrays(nums2,nums1);
+
+        int m=nums1.length,n=nums2.length;
+        int med=(m+n+1)>>>1;
+        int l=0,r=m;
+        while(l<r){
+            int mid=l+(r-l)/2;
+            if(nums1[mid]<nums2[med-mid-1]) l=mid+1;
+            else r=mid;
+        }
+        int nums1LeftMax = l==0?Integer.MIN_VALUE:nums1[l-1];
+        int nums1RightMin = l==m?Integer.MAX_VALUE:nums1[l];
+
+        int nums2LeftMax = med-l==0?Integer.MIN_VALUE:nums2[med-l-1];
+        int nums2RightMin = med-l==n?Integer.MAX_VALUE:nums2[med-l];
+
+        if((m+n)%2==1) return Math.max(nums1LeftMax,nums2LeftMax);
+        return (Math.max(nums1LeftMax,nums2LeftMax)+Math.min(nums1RightMin,nums2RightMin))*0.5;
+    }
+}
+
+class Solution {
+    public double findMedianSortedArrays(int[] nums1, int[] nums2) {
+        int n1=nums1.length,n2=nums2.length;
+        int n=n1+n2;
+        int l=n/2,r=n/2+1;
+        if(n%2==0) return (findKth(nums1, 0, nums2, 0, l) + findKth(nums1, 0, nums2, 0, r)) / 2.0;
+        return findKth(nums1, 0, nums2, 0, r) * 1.0;
+    }
+    public int findKth(int[] nums1, int start1, int[] nums2, int start2, int k) {
+        if(start1>=nums1.length) return nums2[start2+k-1];
+        if(start2>=nums2.length) return nums1[start1+k-1];
+        if(k==1) return Math.min(nums1[start1],nums2[start2]);
+
+        int m1=(start1+k/2-1)<nums1.length?nums1[start1+k/2-1]:Integer.MAX_VALUE;
+        int m2=(start2+k/2-1)<nums2.length?nums2[start2+k/2-1]:Integer.MAX_VALUE;
+
+        if(m1<m2) return findKth(nums1, start1+k/2, nums2, start2, k-k/2);
+        return findKth(nums1, start1, nums2, start2+k/2, k-k/2);
+    }
+}
+
+//滑动窗口
+480. 滑动窗口中位数

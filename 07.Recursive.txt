@@ -1,0 +1,85 @@
+递归: 从上往下
+dp: 自底向上
+
+递归题的三部曲:
+1.确定终止条件：递归应该在什么时候结束？
+2.确定递归函数的参数以及返回值：应该给上一级返回什么信息？
+3.确定单层递归的逻辑：在这一级递归中，应该完成什么任务？
+
+
+
+
+
+118. 杨辉三角
+class Solution {
+    public List<List<Integer>> generate(int numRows) {
+        List<List<Integer>> res=new ArrayList<>();
+        for(int i=0;i<numRows;i++){
+            List<Integer> cur=new ArrayList<>(i+1);
+            for(int j=0;j<=i;j++){
+                if(j==0||j==i) cur.add(1);
+                else cur.add(res.get(i-1).get(j-1)+res.get(i-1).get(j));
+            }
+            res.add(cur);
+        }
+        return res;
+    }
+}
+
+class Solution {
+    int[][] dic;
+    public List<List<Integer>> generate(int numRows) {
+        dic=new int[numRows][numRows];
+        List<List<Integer>> res=new ArrayList<>();
+        for(int i=0;i<numRows;i++){
+            List<Integer> cur=new ArrayList<>(i+1);
+            for(int j=0;j<=i;j++) cur.add(generate(i,j));
+            res.add(cur);
+        }
+        return res;
+    }
+    public int generate(int i,int j){
+        if(i==0||j==0||j==i) return 1;
+        if(dic[i][j]==0) dic[i][j]=generate(i-1,j-1)+generate(i-1,j);
+        return dic[i][j];
+    }
+}
+
+119. 杨辉三角 II
+class Solution {
+    public List<Integer> getRow(int rowIndex) {
+        if(rowIndex==0) return Arrays.asList(1);
+        List<Integer> pre=getRow(rowIndex-1);
+        List<Integer> res=new ArrayList<>();
+        for(int i=0;i<=rowIndex;i++){
+            if(i==0||i==rowIndex) res.add(1);
+            else res.add(pre.get(i-1)+pre.get(i));
+        }
+        return res;
+    }
+}
+
+class Solution {
+    public List<Integer> getRow(int rowIndex) {
+        int[] res=new int[rowIndex+1];
+        Arrays.fill(res,1);
+        for(int i=2;i<=rowIndex;i++){
+            for(int j=i-1;j>0;j--) res[j]+=res[j-1];
+        }
+        return Arrays.stream(res).boxed().collect(Collectors.toList());
+    }
+}
+
+
+对一个正整数n，算得到1需要的最少操作次数。操作规则为：如果n为偶数，将其除以2；如果n为奇数，可以加1或减1。
+class Solution {
+    public int func(int n) {
+        if(n==1) return 0;
+        if(n%2==0) return func(n/2)+1;
+
+        int x=func(n+1);
+        int y=func(n-1);
+        if(x>y) return y+1;
+        else return x+1;
+    }
+}

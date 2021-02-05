@@ -1,0 +1,305 @@
+https://leetcode-cn.com/problems/sort-an-array/solution/fu-xi-ji-chu-pai-xu-suan-fa-java-by-liweiwei1419/
+https://leetcode-cn.com/problems/sort-an-array/solution/python-shi-xian-de-shi-da-jing-dian-pai-xu-suan-fa/
+https://leetcode-cn.com/problems/sort-an-array/solution/dang-wo-tan-pai-xu-shi-wo-zai-tan-xie-shi-yao-by-s/
+
+
+
+912. 排序数组
+快速排序
+//从右向左，从pivot对面开始，i在大于p的地方停下，j在小于p的地方停下。如果i先走，最后停下跟p交换时，总是大于p。
+class Solution {
+    public int[] sortArray(int[] nums) {
+        quicksort(nums,0,nums.length-1);
+        return nums;
+    }
+    public void quicksort(int[] nums,int l,int r){
+        if(l>=r) return;
+        int p=nums[l],i=l,j=r;
+        while(i<j){
+            while(i<j&&nums[j]>=p) j--;
+            nums[i]=nums[j];
+            while(i<j&&nums[i]<=p) i++;
+            nums[j]=nums[i];
+        }
+        nums[i]=p;
+
+        quicksort(nums,l,i-1);
+        quicksort(nums,i+1,r);
+    }
+}
+
+3-Way QuickSort
+class Solution {
+    public int[] sortArray(int[] nums) {
+        quicksort(nums,0,nums.length-1);
+        return nums;
+    }
+    public void quicksort(int[] nums,int l,int r){
+        if(l>=r) return;
+        int rand=new Random().nextInt(r-l+1)+l;
+        swap(nums,rand,l);
+
+        int p=nums[l];
+        int lt=l;     // arr[l+1...lt] < v
+        int gt=r+1; // arr[gt...r] > v
+        int i=l+1;    // arr[lt+1...i) == v
+        while(i<gt){
+            if(nums[i]<p) swap(nums,i++,lt++ +1);
+            else if(nums[i]>p) swap(nums,i,gt-- -1);
+            else i++;
+        }
+        swap(nums,l,lt);
+
+        quicksort(nums,l,lt-1);
+        quicksort(nums,gt,r);
+    }
+    private void swap(int[] nums, int i, int j) {
+        int temp=nums[i];
+        nums[i]=nums[j];
+        nums[j]=temp;
+    }
+}
+
+
+堆排序
+class Solution {
+    public int[] sortArray(int[] nums) {
+        heapsort(nums);
+        return nums;
+    }
+    public void heapsort(int[] nums){//大顶堆
+        int n=nums.length;
+        for(int i=n/2-1;i>=0;i--)//最后一个非叶结点
+            heapify(nums,i,n);
+        for(int i=n-1;i>0;i--){
+            swap(nums,0,i);//堆顶与末尾进行交换
+            heapify(nums,0,i);
+        }
+    }
+    public static void heapify(int[] nums, int start, int end) {
+        int largest = start;
+        int l = 2 * start + 1;
+        int r = 2 * start + 2;
+
+        if (l < end && nums[l] > nums[largest]) largest = l;
+        if (r < end && nums[r] > nums[largest]) largest = r;
+
+        if (largest != start) {
+            swap(nums,largest,start);
+            heapify(nums, largest,end);
+        }
+    }
+    public void swap(int[] nums,int i,int j) {
+        int temp=nums[i];
+        nums[i]=nums[j];
+        nums[j]=temp;
+    }
+}
+//
+    public void heapify(int[] nums,int start,int end){
+        int p=nums[start];
+        for(int i=start*2+1;i<=end;i=2*i+1){
+            if(i<end&&nums[i]<nums[i+1]) i++;
+            if(p>=nums[i]) break;
+            nums[start]=nums[i];
+            start=i;
+        }
+        nums[start]=p;
+    }
+
+
+归并排序
+class Solution {
+    public int[] sortArray(int[] nums) {
+        mergesort(nums,0,nums.length-1);
+        return nums;
+    }
+    public void mergesort(int[] nums,int l,int r){
+        if(l==r) return;
+        int m=l+((r-l)>>1);
+        mergesort(nums,l,m);
+        mergesort(nums,m+1,r);
+        merge(nums,l,m,r);
+    }
+    public void merge(int[] nums,int l,int m,int r){
+        int[] res=new int[r-l+1];
+        int p1=l,p2=m+1,i=0;
+        while(p1<=m&&p2<=r) res[i++]=nums[p1]<nums[p2]?nums[p1++]:nums[p2++];
+        while(p1<=m) res[i++]=nums[p1++];
+        while(p2<=r) res[i++]=nums[p2++];
+
+        for(int j=0;j<res.length;j++)
+            nums[l+j]=res[j];
+    }
+}
+
+插入排序
+class Solution {
+    public int[] sortArray(int[] nums) {
+        insertsort(nums,nums.length);
+        return nums;
+    }
+    public void insertsort(int[] nums,int n){
+        for(int i=0;i<n;++i){
+            int cur=nums[i];
+            int j=i-1;
+            while(j>=0&&cur<nums[j]){
+                nums[j+1]=nums[j];
+                j--;
+            }
+            nums[j+1]=cur;
+        }
+    }
+}
+
+147. 对链表进行插入排序  链表
+
+冒泡排序
+class Solution {
+    public int[] sortArray(int[] nums) {
+        bubblesort(nums,nums.length);
+        return nums;
+    }
+    public void bubblesort(int[] nums,int n){
+        boolean swapped;
+        for(int i=1;i<n;i++){
+            swapped=false;
+            for(int j=1;j<n-i+1;j++){
+                if(nums[j-1]>nums[j]){
+                    swap(nums,j-1,j);
+                    swapped=true;
+                }
+            }
+            if(!swapped) break;
+        }
+    }
+    public void swap(int[] nums,int i,int j) {
+        int temp=nums[i];
+        nums[i]=nums[j];
+        nums[j]=temp;
+    }
+}
+
+选择排序
+class Solution {
+    public int[] sortArray(int[] nums) {
+        selectionsort(nums,nums.length);
+        return nums;
+    }
+    public void selectionsort(int[] nums,int n){
+        int cur;
+        for(int i=0;i<n-1;i++){
+            cur=i;
+            for(int j=i+1;j<n;j++){
+                if(nums[cur]>nums[j]) cur=j;
+            }
+            swap(nums,i,cur);
+        }
+    }
+    public void swap(int[] nums,int i,int j) {
+        int temp=nums[i];
+        nums[i]=nums[j];
+        nums[j]=temp;
+    }
+}
+
+计数排序
+1122. 数组的相对排序
+class Solution {
+    public int[] relativeSortArray(int[] arr1, int[] arr2) {
+        int[] cnt=new int[1001];
+        for(int i:arr1) cnt[i]++;
+        int[] res=new int[arr1.length];
+        int idx=0;
+        for(int i:arr2){
+            while(cnt[i]-->0) res[idx++]=i;
+        }
+        for(int i=0;i<cnt.length;i++){
+            while(cnt[i]-->0) res[idx++]=i;
+        }
+        return res;
+    }
+}
+
+1051. 高度检查器
+class Solution {
+    public int heightChecker(int[] heights) {
+        int[] cnt=new int[101];
+        for(int i:heights) cnt[i]++;
+        int res=0;
+        for(int i=1,idx=0;idx<heights.length;i++){
+           while(cnt[i]-->0){
+               if(heights[idx++]!=i) res++;
+           }
+        }
+        return res;
+    }
+}
+
+桶排序
+class Solution {
+    public int[] sortArray(int[] nums) {
+        return bucketsort(nums);
+    }
+    public int[] bucketsort(int[] nums){
+        List<Integer> res=new ArrayList<>();
+        int max=Arrays.stream(nums).max().getAsInt();
+        int min=Arrays.stream(nums).min().getAsInt();
+        int each=10,len=(max-min)/each+1;
+        List<Integer>[] buk=new List[len];
+        for(int i=0;i<len;i++) buk[i]=new ArrayList<>();
+        for(int i=0;i<nums.length;i++){
+            int idx=(nums[i]-min)/each;
+            buk[idx].add(nums[i]);
+        }
+        for(int i=0;i<len;i++){
+            Collections.sort(buk[i]);
+            for(int j:buk[i]) res.add(j);
+        }
+        return res.stream().mapToInt(i->i).toArray();
+    }
+}
+
+164. 最大间距
+class Solution {
+    public int maximumGap(int[] nums) {
+        if(nums.length<2) return 0;
+        int max=Arrays.stream(nums).max().getAsInt();
+        int min=Arrays.stream(nums).min().getAsInt();
+        if(max==min) return 0;
+        int each=(max-min-1)/(nums.length-1)+1,len=(max-min)/each+1;
+        int[][] buk=new int[len][2];
+        for(int[] i:buk) Arrays.fill(i,-1);
+        for(int i=0;i<nums.length;i++){
+            int idx=(nums[i]-min)/each;
+            if(buk[idx][0]==-1) buk[idx][0]=buk[idx][1]=nums[i];
+            else{
+                buk[idx][0]=Math.min(buk[idx][0],nums[i]);
+                buk[idx][1]=Math.max(buk[idx][1],nums[i]);
+            }
+        }
+        int res=0,pre=-1;
+        for(int i=0;i<len;i++){
+            if(buk[i][0]==-1) continue;
+            if(pre!=-1){
+                res=Math.max(res,buk[i][0]-buk[pre][1]);
+            }
+            pre=i;
+        }
+        return res;
+    }
+}
+
+//https://leetcode-cn.com/problems/task-scheduler/solution/tong-zi-by-popopop/
+621. 任务调度器
+class Solution {
+    public int leastInterval(char[] tasks, int n) {
+        int[] dic=new int[26];
+        for(char c:tasks) dic[c-'A']++;
+        Arrays.sort(dic);
+
+        int cnt=0;
+        for(int i=25;i>=0&&dic[i]==dic[25];i--) cnt++;
+        return Math.max(tasks.length,cnt+(dic[25]-1)*(n+1));
+    }
+}

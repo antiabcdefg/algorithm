@@ -1,0 +1,658 @@
+比dfs多了一步回溯
+result = []
+def backtrack(路径, 选择列表):
+    if 满足结束条件:
+        result.add(路径)
+        return
+
+    for 选择 in 选择列表:
+        做选择
+        backtrack(路径, 选择列表)
+        撤销选择
+
+
+257. 二叉树的所有路径
+class Solution {
+    private List<String> res;
+    public List<String> binaryTreePaths(TreeNode root) {
+        res=new ArrayList<>();
+        backtrack(root,"");
+        return res;
+    }
+    public void backtrack(TreeNode root,String s){
+        if(root==null) return;
+        if(root.left==null&&root.right==null){
+            res.add(s+root.val);
+            return;
+        }
+
+        if(root.left!=null) backtrack(root.left,s+root.val+"->");
+        if(root.right!=null) backtrack(root.right,s+root.val+"->");
+    }
+}
+
+class Solution {
+    public List<String> binaryTreePaths(TreeNode root) {
+        List<String> res=new ArrayList<>();
+        if(root==null) return res;
+        Stack<Object> stk=new Stack();
+        stk.push(root);
+        stk.push(root.val+"");
+        while(!stk.isEmpty()){
+            String s=(String)stk.pop();
+            TreeNode node=(TreeNode)stk.pop();
+            if(node.left==null&&node.right==null) res.add(s);
+            if(node.left!=null){
+                stk.push(node.left);
+                stk.push(s+"->"+node.left.val);
+            }
+            if(node.right!=null){
+                stk.push(node.right);
+                stk.push(s+"->"+node.right.val);
+            }
+        }
+        return res;
+    }
+}
+
+class Solution {
+    public List<String> binaryTreePaths(TreeNode root) {
+        List<String> res=new ArrayList<>();
+        if(root==null) return res;
+        Queue<Object> q=new LinkedList<>();
+        q.offer(root);
+        q.offer(root.val+"");
+        while(!q.isEmpty()){
+            TreeNode node=(TreeNode)q.poll();
+            String s=(String)q.poll();
+            if(node.left==null&&node.right==null) res.add(s);
+            if(node.right!=null){
+                q.offer(node.right);
+                q.offer(s+"->"+node.right.val);
+            }
+            if(node.left!=null){
+                q.offer(node.left);
+                q.offer(s+"->"+node.left.val);
+            }
+        }
+        return res;
+    }
+}
+
+22. 括号生成
+class Solution {
+    List<String> res;
+    public List<String> generateParenthesis(int n) {
+        res=new ArrayList<>();
+        if(n==0) return res;
+        backtrack("",n,n);
+        return res;
+    }
+    public void backtrack(String cur,int l,int r){
+        if(l==0&&r==0){
+            res.add(cur);
+            return;
+        }
+        if(l>r) return;
+        if(l>0) backtrack(cur+'(',l-1,r);
+        if(r>0) backtrack(cur+')',l,r-1);
+    }
+}
+
+//Bitwise
+78. 子集subset
+class Solution {
+    private List<List<Integer>> res;
+    public List<List<Integer>> subsets(int[] nums) {
+        res=new ArrayList<>();
+        backtrack(nums,new ArrayList<Integer>(),0);
+        return res;
+    }
+    public void backtrack(int[] nums,List<Integer> cur,int start){
+        res.add(new ArrayList(cur));
+        for(int i=start;i<nums.length;i++){
+            cur.add(nums[i]);
+            backtrack(nums,cur,i+1);
+            cur.remove(cur.size()-1);
+        }
+    }
+}
+
+class Solution {
+    public List<List<Integer>> subsets(int[] nums) {
+        int len=1<<nums.length;//3位数8个状态
+        List<List<Integer>> res=new ArrayList<>(len);
+        for(int i=0;i<len;i++){
+            List<Integer> list=new ArrayList<>();
+            for(int j=0;j<nums.length;j++){
+                if(((i>>j)&1)==1) list.add(nums[j]);//判断j位是否为1
+            }
+            res.add(list);
+        }
+        return res;
+    }
+}
+
+90. 子集 II  prune
+class Solution {
+    private List<List<Integer>> res;
+    public List<List<Integer>> subsetsWithDup(int[] nums) {
+        Arrays.sort(nums);
+        res=new ArrayList<>();
+        backtrack(nums,new ArrayList<Integer>(),0);
+        return res;
+    }
+    public void backtrack(int[] nums,List<Integer> cur,int start){
+        res.add(new ArrayList(cur));
+        for(int i=start;i<nums.length;i++){
+            if(i!=start&&nums[i]==nums[i-1]) continue;
+            cur.add(nums[i]);
+            backtrack(nums,cur,i+1);
+            cur.remove(cur.size()-1);
+        }
+    }
+}
+
+77. 组合combination
+class Solution {
+    private List<List<Integer>> res;
+    public List<List<Integer>> combine(int n, int k) {
+        res=new ArrayList<>();
+        backtrack(n,k,new ArrayList<Integer>(),1);
+        return res;
+    }
+    public void backtrack(int n,int k,List<Integer> cur,int start){
+        if(cur.size()==k){
+            res.add(new ArrayList(cur));
+            return;
+        }
+        for(int i=start;i<=n;i++){
+            cur.add(i);
+            backtrack(n,k,cur,i+1);
+            cur.remove(cur.size()-1);
+        }
+    }
+}
+
+39. 组合总和
+class Solution {
+    private List<List<Integer>> res;
+    public List<List<Integer>> combinationSum(int[] candidates, int target) {
+        res=new ArrayList<>();
+        backtrack(candidates,target,new ArrayList<Integer>(),0);
+        return res;
+    }
+    public void backtrack(int[] candidates,int target,List<Integer> cur,int start){
+        if(target==0){
+            res.add(new ArrayList(cur));
+            return;
+        }
+        for(int i=start;i<candidates.length;i++){
+            if(target-candidates[i]<0) continue;
+            cur.add(candidates[i]);
+            backtrack(candidates,target-candidates[i],cur,i);
+            cur.remove(cur.size()-1);
+        }
+    }
+}
+
+class Solution {
+    private List<List<Integer>> res;
+    public List<List<Integer>> combinationSum(int[] candidates, int target) {
+        res=new ArrayList<>();
+        Arrays.sort(candidates);
+        backtrack(candidates,target,new ArrayList<Integer>(),0);
+        return res;
+    }
+    public void backtrack(int[] candidates,int target,List<Integer> cur,int start){
+        if(target==0){
+            res.add(new ArrayList(cur));
+            return;
+        }
+        for(int i=start;i<candidates.length;i++){
+            if(target-candidates[i]<0) break;
+            cur.add(candidates[i]);
+            backtrack(candidates,target-candidates[i],cur,i);
+            cur.remove(cur.size()-1);
+        }
+    }
+}
+
+40. 组合总和 II
+class Solution {
+    private List<List<Integer>> res;
+    public List<List<Integer>> combinationSum2(int[] candidates, int target) {
+        res=new ArrayList<>();
+        Arrays.sort(candidates);
+        backtrack(candidates,target,new ArrayList<Integer>(),0);
+        return res;
+    }
+    public void backtrack(int[] candidates,int target,List<Integer> cur,int start){
+        if(target==0){
+            res.add(new ArrayList(cur));
+            return;
+        }
+        for(int i=start;i<candidates.length;i++){
+            if(target-candidates[i]<0) break;
+            if(i!=start&&candidates[i]==candidates[i-1]) continue;
+            cur.add(candidates[i]);
+            backtrack(candidates,target-candidates[i],cur,i+1);
+            cur.remove(cur.size()-1);
+        }
+    }
+}
+
+377. 组合总和 Ⅳ  dp
+
+46. 全排列permutation
+class Solution {
+    private List<List<Integer>> res;
+    public List<List<Integer>> permute(int[] nums) {
+        res=new ArrayList<>();
+        backtrack(nums,new ArrayList<Integer>(),new boolean[nums.length]);
+        return res;
+    }
+    public void backtrack(int[] nums,List<Integer> cur,boolean[] visited){
+        if(cur.size()==nums.length){
+            res.add(new ArrayList(cur));
+            return;
+        }
+        for(int i=0;i<nums.length;i++){
+            if(visited[i]) continue;
+            cur.add(nums[i]);
+            visited[i]=true;
+            backtrack(nums,cur,visited);
+            cur.remove(cur.size()-1);
+            visited[i]=false;
+        }
+    }
+}
+
+class Solution {
+    private List<List<Integer>> res;
+    public List<List<Integer>> permute(int[] nums) {
+        res=new ArrayList<>();
+        List<Integer> copy=new ArrayList<>();
+        for(int i:nums) copy.add(i);
+        backtrack(copy,0);
+        return res;
+    }
+    public void backtrack(List<Integer> copy,int start){
+        if(start==copy.size()){
+            res.add(new ArrayList(copy));
+            return;
+        }
+        for(int i=start;i<copy.size();i++){
+            Collections.swap(copy,start,i);
+            backtrack(copy,start+1);
+            Collections.swap(copy,start,i);
+        }
+    }
+}
+
+47. 全排列 II
+class Solution {
+    private List<List<Integer>> res;
+    public List<List<Integer>> permuteUnique(int[] nums) {
+        res=new ArrayList<>();
+        Arrays.sort(nums);
+        backtrack(nums,new ArrayList<Integer>(),new boolean[nums.length]);
+        return res;
+    }
+    public void backtrack(int[] nums,List<Integer> cur,boolean[] visited){
+        if(cur.size()==nums.length){
+            res.add(new ArrayList(cur));
+            return;
+        }
+        for(int i=0;i<nums.length;i++){
+            if(visited[i]) continue;
+            if(i!=0&&nums[i-1]==nums[i]&&visited[i-1]) break;
+            cur.add(nums[i]);
+            visited[i]=true;
+            backtrack(nums,cur,visited);
+            cur.remove(cur.size()-1);
+            visited[i]=false;
+        }
+    }
+}
+
+784. 字母大小写全排列
+class Solution {
+    private List<String> res;
+    public List<String> letterCasePermutation(String S) {
+        res=new ArrayList<>();
+        char[] copy=S.toCharArray();
+        backtrack(copy,new ArrayList<Character>(),0);
+        return res;
+    }
+    public void backtrack(char[] copy,List<Character> cur,int start){
+        if(cur.size()==copy.length){
+            StringBuilder sb=new StringBuilder(cur.size());
+            for(char c:cur) sb.append(c);
+            res.add(sb.toString());
+            return;
+        }
+        for(int i=start;i<copy.length;i++){
+            cur.add(copy[i]);
+            backtrack(copy,cur,i+1);
+            cur.remove(cur.size()-1);
+
+            if(Character.isLetter(copy[i])){
+                copy[i]^=1<<5;
+                cur.add(copy[i]);
+                backtrack(copy,cur,i+1);
+                cur.remove(cur.size()-1);
+            }
+        }
+    }
+}
+
+79. 单词搜索
+class Solution {
+    public boolean exist(char[][] board, String word) {
+        if(board.length==0) return false;
+        int m=board.length,n=board[0].length;
+        char[] words=word.toCharArray();
+
+        for(int i=0;i<m;i++){
+            for(int j=0;j<n;j++){
+                if(dfs(board,i,j,words,0)) return true;
+            }
+        }
+        return false;
+    }
+    public boolean dfs(char[][] board,int i,int j,char[] word,int idx){
+        if(i<0||i>=board.length||j<0||j>=board[0].length||board[i][j]!=word[idx]) return false;
+        if(idx==word.length-1) return true;
+
+        char c=board[i][j];
+        board[i][j]='#';
+        boolean res=dfs(board,i-1,j,word,idx+1)||dfs(board,i+1,j,word,idx+1)||dfs(board,i,j-1,word,idx+1)||dfs(board,i,j+1,word,idx+1);
+        board[i][j]=c;
+        return res;
+    }
+}
+
+140. 单词拆分 II
+class Solution {
+    HashMap<Integer,List<String>> map=new HashMap<>();
+    public List<String> wordBreak(String s, List<String> wordDict) {
+        Set<String> wordSet=new HashSet<>(wordDict);
+        return word_Break(s, wordSet, 0);
+    }
+    public List<String> word_Break(String s, Set<String> wordDict, int start) {
+        if (map.containsKey(start)) return map.get(start);
+
+        LinkedList<String> res = new LinkedList<>();
+        if(start==s.length()) res.add("");
+
+        for(int end=start+1;end<=s.length();end++){
+            if(wordDict.contains(s.substring(start,end))){
+                List<String> list=word_Break(s,wordDict,end);
+                for(String l:list){
+                    res.add(s.substring(start,end)+(l.equals("")?"":" ")+l);
+                }
+            }
+        }
+        map.put(start,res);
+        return res;
+    }
+}
+
+//dp
+494. 目标和
+class Solution {
+    int res=0;
+    public int findTargetSumWays(int[] nums, int S) {
+        if(nums.length==0) return 0;
+        backtrack(nums,0,0,S);
+        return res;
+    }
+    public void backtrack(int[] nums,int cur,int sum,int S){
+        if(cur==nums.length){
+            if(sum==S) res++;
+            return;
+        }
+        backtrack(nums,cur+1,sum+nums[cur],S);
+        backtrack(nums,cur+1,sum-nums[cur],S);
+    }
+}
+
+17. 电话号码的字母组合
+class Solution {
+    private List<String> res;
+    private String[] map={"","","abc","def","ghi","jkl","mno","pqrs","tuv","wxyz"};
+    public List<String> letterCombinations(String digits) {
+        res=new ArrayList<>();
+        if(digits.length()==0) return res;
+        backtrack(digits,"",0);
+        return res;
+    }
+    public void backtrack(String digits,String cur,int start){
+        if(start==digits.length()){
+            res.add(cur);
+            return;
+        }
+        String letters=map[digits.charAt(start)-'0'];
+        for(int i=0;i<letters.length();i++){
+            backtrack(digits,cur+letters.charAt(i),start+1);
+        }
+    }
+}
+
+491. 递增子序列
+class Solution {
+    List<List<Integer>> res=new ArrayList<>();
+    public List<List<Integer>> findSubsequences(int[] nums) {
+        dfs(nums,-1,new ArrayList<>());
+        return res;
+    }
+    private void dfs(int[] nums, int idx, List<Integer> cur) {
+        if(cur.size()>1){
+            res.add(new ArrayList<>(cur));
+            // 注意这里不要加return，要取树上的节点
+        }
+
+        Set<Integer> set=new HashSet<>();
+        for(int i=idx+1;i<nums.length;i++) {
+            if(!set.add(nums[i])) continue;
+
+            if(idx==-1||nums[i]>=nums[idx]){
+                cur.add(nums[i]);
+                dfs(nums,i,cur);
+                cur.remove(cur.size()-1);
+            }
+        }
+    }
+}
+
+131. 分割回文串
+class Solution {
+    private List<List<String>> res;
+    public List<List<String>> partition(String s) {
+        res=new ArrayList<>();
+        if(s=="") return res;
+        backtrack(s,new ArrayList<String>(),0);
+        return res;
+    }
+    public void backtrack(String s,List<String> cur,int start){
+        if(start==s.length()){
+            res.add(new ArrayList<>(cur));
+            return;
+        }
+        for(int i=start;i<s.length();i++){
+            String str=s.substring(start,i+1);
+            if(!isPalindrome(str)) continue;
+            cur.add(str);
+            backtrack(s,cur,i+1);
+            cur.remove(cur.size()-1);
+        }
+    }
+    public boolean isPalindrome(String s){
+        for(int i=0,j=s.length()-1;i<j;i++,j--){
+            if(s.charAt(i)!=s.charAt(j)) return false;
+        }
+        return true;
+    }
+}
+
+93. 复原IP地址
+class Solution {
+    private List<String> res;
+    public List<String> restoreIpAddresses(String s) {
+        res=new ArrayList<>();
+        backtrack(s,new ArrayList<>(),0);
+        return res;
+    }
+    public void backtrack(String s,List<String> cur,int start){
+        if(cur.size()==4){
+            if(start==s.length()) res.add(String.join(".", cur));
+            return;
+        }
+        for(int i=1;i<4;i++){
+            if(start+i>s.length()) break;//如果当前位置距离s末尾小于3就不用再分段
+            String segment=s.substring(start,start+i);
+            if(segment.length()>1&&segment.charAt(0)=='0'||(i==3&&Integer.valueOf(segment)>255)) continue;
+            cur.add(segment);
+            backtrack(s,cur,start+i);
+            cur.remove(cur.size()-1);
+        }
+    }
+}
+
+401. 二进制手表
+class Solution {
+    private List<String> res;
+    private int[] nums;
+    public List<String> readBinaryWatch(int num) {
+        res=new ArrayList<>();
+        nums=new int[]{1,2,4,8,1,2,4,8,16,32};
+        backtrack(num,new int[2],0);
+        return res;
+    }
+    public void backtrack(int num,int[] cur,int start){
+        if(num==0){
+            if(cur[0]>11||cur[1]>59) return;
+            StringBuilder sb=new StringBuilder();
+            sb.append(cur[0]).append(":");
+            if(cur[1]<10) sb.append(0);
+            sb.append(cur[1]);
+            res.add(sb.toString());
+            return;
+        }
+        for(int i=start;i<nums.length;i++){
+            if(cur[0]>11||cur[1]>59) continue;
+            if(i<4) cur[0]+=nums[i];
+            else cur[1]+=nums[i];
+            backtrack(num-1,cur,i+1);
+            if(i<4) cur[0]-=nums[i];
+            else cur[1]-=nums[i];
+        }
+    }
+}
+
+51. N皇后
+class Solution {
+    private List<List<String>> res;
+    public List<List<String>> solveNQueens(int n) {
+        res=new ArrayList<>();
+        char[][] board=new char[n][n];
+        for(char[] b:board){
+            for(int i=0;i<n;i++) b[i]='.';
+        }
+        backtrack(board,0);
+        return res;
+    }
+    public void backtrack(char[][] board,int row){
+        if(row==board.length){
+            List<String> cur=new ArrayList<>();
+            for(int i=0;i<board.length;i++) cur.add(String.valueOf(board[i]));
+            res.add(cur);
+            return;
+        }
+        int n=board[row].length;
+        for(int j=0;j<n;j++){
+            if(!isValid(board,row,j)) continue;
+            board[row][j]='Q';
+            backtrack(board,row+1);
+            board[row][j]='.';
+        }
+    }
+    public boolean isValid(char[][] board,int r,int c){
+        int n=board.length;
+        for(int i=0;i<n;i++){
+            if(board[i][c]=='Q') return false;
+        }
+        for(int i=r-1,j=c-1;i>=0&&j>=0;i--,j--){
+            if(board[i][j]=='Q') return false;
+        }
+        for(int i=r-1,j=c+1;i>=0&&j<n;i--,j++){
+            if(board[i][j]=='Q') return false;
+        }
+        return true;
+    }
+}
+
+37. 解数独
+class Solution {
+    public void solveSudoku(char[][] board) {
+        backtrack(board);
+    }
+    public boolean backtrack(char[][] board){
+         for(int i=0;i<9;i++){
+             for(int j=0;j<9;j++){
+                if(board[i][j]!='.') continue;
+                for(char v='1';v<='9';v++){
+                    if(!isValid(board,i,j,v)) continue;
+                    board[i][j]=v;
+                    if(backtrack(board)) return true;
+                    board[i][j]='.';
+                }
+                return false;
+            }
+        }
+        return true;
+    }
+    public boolean isValid(char[][] board,int r,int c,char v){
+        for(int i=0;i<9;i++){
+            if(board[r][i]==v||board[i][c]==v) return false;
+        }
+        for(int i=0;i<3;i++){
+            for(int j=0;j<3;j++){
+                if(board[(r/3)*3+i][(c/3)*3+j]==v) return false;
+            }
+        }
+        return true;
+    }
+}
+
+class Solution {
+    private boolean[][] rows=new boolean[9][10];
+    private boolean[][] cols=new boolean[9][10];
+    private boolean[][] boxs=new boolean[9][10];
+    public void solveSudoku(char[][] board) {
+        for(int i=0;i<9;i++){
+            for(int j=0;j<9;j++){
+                if(board[i][j]=='.') continue;
+                rows[i][board[i][j]-'0']=cols[j][board[i][j]-'0']=boxs[i/3*3+j/3][board[i][j]-'0']=true;
+            }
+        }
+        backtrack(board,0,0);
+    }
+    public boolean backtrack(char[][] board,int i,int j){
+        if(j==9){
+            i++;j=0;
+            if(i==9) return true;
+        }
+        if(board[i][j]!='.') return backtrack(board,i,j+1);
+        for(char v='1';v<='9';v++){
+            if(rows[i][v-'0']||cols[j][v-'0']||boxs[i/3*3+j/3][v-'0']) continue;
+            rows[i][v-'0']=cols[j][v-'0']=boxs[i/3*3+j/3][v-'0']=true;
+            board[i][j]=v;
+            if(backtrack(board,i,j+1)) return true;
+            board[i][j]='.';
+            rows[i][v-'0']=cols[j][v-'0']=boxs[i/3*3+j/3][v-'0']=false;
+        }
+        return false;
+    }
+}

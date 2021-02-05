@@ -1,0 +1,381 @@
+208. 实现 Trie (前缀树)
+class Trie {
+    private class TrieNode{
+        String str=null;
+        boolean end=false;
+        int cnt=0;
+        TrieNode[] children=new TrieNode[26];
+    }
+    TrieNode root;
+    public Trie() {
+        root=new TrieNode();
+    }
+    public void insert(String word) {
+        TrieNode node=root;
+        for(char c:word.toCharArray()){
+            if(node.children[c-'a']==null) node.children[c-'a']=new TrieNode();
+            node=node.children[c-'a'];
+        }
+        if(node.end==false){
+            node.end=true;
+            node.str=word;
+        }
+        node.cnt++;
+    }
+    public boolean search(String word) {
+        TrieNode node=root;
+        for(char c:word.toCharArray()){
+            if(node.children[c-'a']==null) return false;
+            node=node.children[c-'a'];
+        }
+        return node.end;
+    }
+    public boolean startsWith(String prefix) {
+        TrieNode node=root;
+        for(char c:prefix.toCharArray()){
+            if(node.children[c-'a']==null) return false;
+            node=node.children[c-'a'];
+        }
+        return true;
+    }
+}
+
+720. 词典中最长的单词
+class Solution {
+    private class TrieNode{
+        boolean end=false;
+        TrieNode[] children=new TrieNode[26];
+    }
+    TrieNode root=new TrieNode();
+    public void insert(String word) {
+        TrieNode node=root;
+        for(char c:word.toCharArray()){
+            if(node.children[c-'a']==null) node.children[c-'a']=new TrieNode();
+            node=node.children[c-'a'];
+        }
+        node.end=true;
+    }
+    public boolean search(String word) {
+        TrieNode node=root;
+        for(char c:word.toCharArray()){
+            if(node.children[c-'a']==null||!node.children[c-'a'].end) return false;
+            node=node.children[c-'a'];
+        }
+        return node.end;
+    }
+    public String longestWord(String[] words) {
+        for(String s:words) insert(s);
+        String res="";
+        for(String s:words){
+            if(search(s)){
+                if(s.length()>res.length()) res=s;
+                else if(s.length()==res.length()&&s.compareTo(res)<0) res=s;
+            }
+        }
+        return res;
+    }
+}
+
+面试题 17.15. 最长单词
+class Solution {
+    private class TrieNode{
+        boolean end=false;
+        TrieNode[] children=new TrieNode[26];
+    }
+    TrieNode root=new TrieNode();
+    public void insert(String word) {
+        TrieNode node=root;
+        for(char c:word.toCharArray()){
+            if(node.children[c-'a']==null) node.children[c-'a']=new TrieNode();
+            node=node.children[c-'a'];
+        }
+        node.end=true;
+    }
+    public boolean dfs(String word,int idx,int cnt,TrieNode node){
+        if(idx==word.length()){
+            if(node.end&&cnt>0) return true;
+            return false;
+        }
+        if(node.end&&dfs(word,idx,cnt+1,root)) return true;
+        char c=word.charAt(idx);
+        if(node.children[c-'a']==null) return false;
+        return dfs(word,idx+1,cnt,node.children[c-'a']);
+    }
+    public String longestWord(String[] words) {
+        for(String s:words) insert(s);
+        String res="";
+        for(String s:words){
+            if(dfs(s,0,0,root)){
+                if(s.length()>res.length()) res=s;
+                else if(s.length()==res.length()&&s.compareTo(res)<0) res=s;
+            }
+        }
+        return res;
+    }
+}
+
+面试题 17.17. 多次搜索
+class Solution {
+    class TrieNode{
+        boolean end=false;
+        int idx=0;
+        TrieNode[] children=new TrieNode[26];
+    }
+    TrieNode root=new TrieNode();
+    List<List<Integer>> copy=new ArrayList();
+    public void insert(String word,int index) {
+        TrieNode node=root;
+        for(char c:word.toCharArray()){
+            if(node.children[c-'a']==null) node.children[c-'a']=new TrieNode();
+            node=node.children[c-'a'];
+        }
+        node.idx=index;
+        node.end=true;
+    }
+    public void search(String word,int i) {
+        TrieNode node=root;
+        for(char c:word.toCharArray()){
+            if(node.children[c-'a']==null) return;
+            node=node.children[c-'a'];
+            if(node.end) copy.get(node.idx).add(i);
+        }
+    }
+    public int[][] multiSearch(String big, String[] smalls) {
+        for(int i=0;i<smalls.length;i++){
+            insert(smalls[i],i);
+            copy.add(new ArrayList());
+        }
+        for(int i=0;i<big.length();i++){
+            search(big.substring(i),i);
+        }
+        int[][] res=new int[smalls.length][];
+        for (int i=0;i<copy.size();i++) {
+            res[i]=new int[copy.get(i).size()];
+            for(int j=0; j<copy.get(i).size();j++) res[i][j]=copy.get(i).get(j);
+        }
+        return res;
+    }
+}
+
+211. 添加与搜索单词 - 数据结构设计
+class WordDictionary {
+    private class TrieNode{
+        boolean end=false;
+        TrieNode[] children=new TrieNode[26];
+    }
+    private TrieNode root;
+
+    public WordDictionary() {
+        root=new TrieNode();
+    }
+    public void addWord(String word) {
+        TrieNode node=root;
+        for(char c:word.toCharArray()){
+            if(node.children[c-'a']==null) node.children[c-'a']=new TrieNode();
+            node=node.children[c-'a'];
+        }
+        node.end=true;
+    }
+    public boolean search(String word) {
+        return dfs(root,word);
+    }
+    public boolean dfs(TrieNode node,String word){
+        if(node==null) return false;
+        for(int i=0;i<word.length();i++){
+            if(word.charAt(i)=='.'){
+                for(TrieNode t:node.children){
+                    if(dfs(t,word.substring(i+1))) return true;
+                }
+                return false;
+            }
+            if(node.children[word.charAt(i)-'a']==null) return false;
+            node=node.children[word.charAt(i)-'a'];
+        }
+        return node.end;
+    }
+}
+
+212. 单词搜索 II
+class Solution {
+    private class TrieNode{
+        boolean end=false;
+        String str=null;
+        int cnt=0;
+        TrieNode[] children=new TrieNode[26];
+    }
+
+    private TrieNode root=new TrieNode();
+    public List<String> res=new ArrayList<>();
+    public void addWord(String word) {
+        TrieNode node=root;
+        for(char c:word.toCharArray()){
+            if(node.children[c-'a']==null) node.children[c-'a']=new TrieNode();
+            node=node.children[c-'a'];
+        }
+        if(node.end==false){
+            node.end=true;
+            node.str=word;
+        }
+        node.cnt++;
+    }
+    public void dfs(TrieNode node,char[][] board,int i,int j){
+        if(node.end&&node.cnt==1) {
+            res.add(node.str);
+            node.cnt--;
+        }
+        if(i<0||j<0||i>=board.length||j>=board[0].length||board[i][j]=='#') return;
+        if(node.children[board[i][j]-'a']==null) return;
+
+        char cur=board[i][j];
+        board[i][j]='#';
+        dfs(node.children[cur-'a'],board,i+1,j);
+        dfs(node.children[cur-'a'],board,i-1,j);
+        dfs(node.children[cur-'a'],board,i,j+1);
+        dfs(node.children[cur-'a'],board,i,j-1);
+        board[i][j]=cur;
+    }
+
+    public List<String> findWords(char[][] board, String[] words) {
+        if(words==null) return null;
+        for(String w:words) addWord(w);
+
+        TrieNode node=root;
+        for(int i=0;i<board.length;i++){
+            for(int j=0;j<board[0].length;j++){
+                if(node.children[board[i][j]-'a']!=null) dfs(root,board,i,j);
+            }
+        }
+        return res;
+    }
+}
+
+336. 回文对
+class Solution {
+    public List<List<Integer>> palindromePairs(String[] words) {
+        List<List<Integer>> res=new ArrayList<>();
+        if(words.length==0) return res;
+        Map<String,Integer> map=new HashMap<>();
+        Set<Integer> set=new HashSet<>();
+        for(int i=0;i<words.length;i++){
+            map.put(words[i],i);
+            set.add(words[i].length());
+        }
+        for(int i=0;i<words.length;i++){
+            int size=words[i].length();
+            words[i]=new StringBuilder(words[i]).reverse().toString();
+            if(map.containsKey(words[i])&&map.get(words[i])!=i){
+                List<Integer> list=new ArrayList<>();
+                list.add(i);
+                list.add(map.get(words[i]));
+                res.add(list);
+            }
+            Iterator<Integer> it=set.iterator();
+            while(it.hasNext()){
+                int cur=it.next();
+                if(cur>=size) continue;
+                if(isValid(words[i],cur,size-1)&&map.containsKey(words[i].substring(0,cur))){
+                    List<Integer> list=new ArrayList<>();
+                    list.add(map.get(words[i].substring(0,cur)));
+                    list.add(i);
+                    res.add(list);
+                }
+                if(isValid(words[i],0,size-cur-1)&&map.containsKey(words[i].substring(size-cur))){
+                    List<Integer> list=new ArrayList<>();
+                    list.add(i);
+                    list.add(map.get(words[i].substring(size-cur)));
+                    res.add(list);
+                }
+            }
+        }
+        return res;
+    }
+    public boolean isValid(String word,int left,int right){
+        while(left<right){
+            if(word.charAt(left++)!=word.charAt(right--)) return false;
+        }
+        return true;
+    }
+}
+
+//Math
+421. 数组中两个数的最大异或值
+//O(31n)=O(n) O(1)
+class Solution {
+    private class TrieNode{
+        TrieNode[] children=new TrieNode[2];
+    }
+    private TrieNode root=new TrieNode();
+    public void insert(int num){
+        TrieNode node=root;
+        for (int i=30;i>=0;i--) {
+            int bit=(num>>i)&1;
+            if(node.children[bit]==null) node.children[bit]=new TrieNode();
+            node=node.children[bit];
+        }
+    }
+    public int search(int num){
+        TrieNode node=root;
+        int res=0;
+        for(int i=30;i>=0;i--) {
+            int bit=(num>>i)&1;
+            if(node.children[1-bit]!=null){//找与当前不同的bit，存在置1
+                res+=1<<i;
+                node=node.children[1-bit];
+            }else node=node.children[bit];
+        }
+        return res;
+    }
+    public int findMaximumXOR(int[] nums) {
+        for(int n:nums) insert(n);
+        int res=0;
+        for(int num:nums) res=Math.max(res,search(num));
+        return res;
+    }
+}
+
+
+https://leetcode-cn.com/problems/concatenated-words/
+https://leetcode-cn.com/problems/replace-words/
+https://leetcode-cn.com/problems/prefix-and-suffix-search/
+https://leetcode-cn.com/problems/camelcase-matching/
+
+676. 实现一个魔法字典
+class MagicDictionary {
+    private class TrieNode{
+        boolean end=false;
+        TrieNode[] children=new TrieNode[26];
+    }
+    private TrieNode root;
+    public MagicDictionary() {
+        root=new TrieNode();
+    }
+
+    public void buildDict(String[] dictionary) {
+        for(String str:dictionary){
+            TrieNode node=root;
+            for(char c:str.toCharArray()){
+                if(node.children[c-'a']==null) node.children[c-'a']=new TrieNode();
+                node=node.children[c-'a'];
+            }
+            node.end=true;
+        }
+    }
+
+    public boolean search(String searchWord) {
+        return dfs(root,searchWord,0,false);
+    }
+    public boolean dfs(TrieNode node,String searchWord,int idx,boolean ismod){
+        if(node==null) return false;
+        if(searchWord.length()==idx) return ismod&&node.end;
+        for(int i=0;i<26;i++){
+            if(node.children[i]==null) continue;
+            if(i==searchWord.charAt(idx)-'a'){
+                if(dfs(node.children[i],searchWord,idx+1,ismod)) return true;
+            }else if(!ismod&&dfs(node.children[i],searchWord,idx+1,true)) return true;
+        }
+        return false;
+    }
+}
+
+https://leetcode-cn.com/problems/stream-of-characters/
+https://leetcode-cn.com/problems/map-sum-pairs/

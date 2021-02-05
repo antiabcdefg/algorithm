@@ -1,0 +1,459 @@
+
+
+713. 乘积小于K的子数组
+class Solution {
+    public int numSubarrayProductLessThanK(int[] nums, int k) {
+        if(k<=1) return 0;
+        int res=0,prod=1;
+        for(int l=0,r=0;r<nums.length;r++){
+            prod*=nums[r];
+            while(prod>=k){
+                prod/=nums[l++];
+            }
+            res+=r-l+1;
+        }
+        return res;
+    }
+}
+
+209. 长度最小的子数组
+class Solution {
+    public int minSubArrayLen(int s, int[] nums) {
+        int res=Integer.MAX_VALUE,sum=0;
+        for(int l=0,r=0;r<nums.length;r++){
+            sum+=nums[r];
+            while(sum>=s){
+                res=Math.min(res,r-l+1);
+                sum-=nums[l++];
+            }
+        }
+        return res==Integer.MAX_VALUE?0:res;
+    }
+}
+
+class Solution {
+    public int minSubArrayLen(int s, int[] nums) {
+        int n=nums.length,res=Integer.MAX_VALUE;
+        int[] prefix=new int[n+1];
+        for(int i=1;i<=n;i++) prefix[i]=prefix[i-1]+nums[i-1];
+
+        for(int i=0;i<=n;i++){
+            int idx=Arrays.binarySearch(prefix,s+prefix[i]);
+            if(idx<0) idx=~idx; //-4取反3
+            if(idx<=n) res=Math.min(res,idx-i);
+        }
+        return res==Integer.MAX_VALUE?0:res;
+    }
+}
+
+424. 替换后的最长重复字符
+class Solution {
+    public int characterReplacement(String s, int k) {
+        int[] win=new int[128];
+        int res=0,max=0;
+        for(int l=0,r=0;r<s.length();r++){
+            win[s.charAt(r)]++;
+            max=Math.max(max,win[s.charAt(r)]);
+            if(r-l+1>max+k) win[s.charAt(l++)]--;
+            res=Math.max(res,r-l+1);
+        }
+        return res;
+    }
+}
+
+3. 无重复字符的最长子串
+//O(n) O(l)
+class Solution {
+    public int lengthOfLongestSubstring(String s) {
+        if(s.length()==0) return 0;
+        int[] win=new int[128];
+        int res=0;
+        for(int l=0,r=0;r<s.length();r++){
+            win[s.charAt(r)]++;
+            while(win[s.charAt(r)]>1) win[s.charAt(l++)]--;
+            res=Math.max(res,r-l+1);
+        }
+        return res;
+    }
+}
+
+class Solution {
+    public int lengthOfLongestSubstring(String s) {
+        if(s.length()==0) return 0;
+        int[] win=new int[128];
+        int res=0;
+        for(int l=0,r=0;r<s.length();r++){
+            if(win[s.charAt(r)]!=0) l=Math.max(l,win[s.charAt(r)]);
+            win[s.charAt(r)]=r+1;
+            res=Math.max(res,r-l+1);
+        }
+        return res;
+    }
+}
+
+159. 最多有两个不同字符的最长子串
+class Solution {
+    public int lengthOfLongestSubstringTwoDistinct(String s) {
+        Map<Character,Integer> win=new HashMap<>();
+        int res=0;
+        for(int l=0,r=0;r<s.length();r++){
+            win.put(s.charAt(r),win.getOrDefault(s.charAt(r),0)+1);
+            while(win.size()>2){
+                win.put(s.charAt(l),win.getOrDefault(s.charAt(l),0)-1);
+                if(win.get(s.charAt(l))==0) win.remove(s.charAt(l));
+                l++;
+            }
+            res=Math.max(res,r-l+1);
+        }
+        return res;
+    }
+}
+
+class Solution {
+    public int lengthOfLongestSubstringTwoDistinct(String s) {
+        Map<Character,Integer> win=new HashMap<>();
+        int res=0;
+        for(int l=0,r=0;r<s.length();r++){
+            win.put(s.charAt(r),r);
+            while(win.size()>2){
+                if(l==win.get(s.charAt(l))) win.remove(s.charAt(l));
+                l++;
+            }
+            res=Math.max(res,r-l+1);
+        }
+        return res;
+    }
+}
+
+340. 至多包含 K 个不同字符的最长子串
+class Solution {
+    public int lengthOfLongestSubstringKDistinct(String s, int k) {
+        Map<Character,Integer> win=new HashMap<>();
+        int res=0;
+        for(int l=0,r=0;r<s.length();r++){
+            win.put(s.charAt(r),r);
+            while(win.size()>k){
+                if(l==win.get(s.charAt(l))) win.remove(s.charAt(l));
+                l++;
+            }
+            res=Math.max(res,r-l+1);
+        }
+        return res;
+    }
+}
+
+Substrings of size K with K distinct chars 无重复
+Input: s = "abcabc", k = 3
+Output: ["abc", "bca", "cab"]
+class Solution {
+    public List<String> kSubstring(String s, int k) {
+        Set<Character> win=new HashSet<>();
+        Set<String> res=new HashSet<>();
+        for(int l=0,r=0;r<s.length();r++){
+            while(win.contains(s.charAt(r))) win.remove(s.charAt(l++));
+            win.add(s.charAt(r));
+            if(win.size()==k){
+                res.add(s.substring(l,r+1));
+                win.remove(s.charAt(l++));
+            }
+        }
+        return new ArrayList<>(res);
+    }
+}
+
+Substrings with exactly K distinct chars
+//Exact(k) = At most(k) - At most(k - 1)
+Input: s = "pqpqs", k = 2
+Output: ["pq", "pqp", "pqpq", "qp", "qpq", "pq", "qs"]
+class Solution {
+    public int kDistinctSub(String s, int k) {
+        return lengthOfLongestSubstringKDistinct(s,k)-lengthOfLongestSubstringKDistinct(s,k-1);
+    }
+    public int lengthOfLongestSubstringKDistinct(String s, int k) {
+        Map<Character,Integer> win=new HashMap<>();
+        int res=0;
+        for(int l=0,r=0;r<s.length();r++){
+            win.put(s.charAt(r),r);
+            while(win.size()>k){
+                if(l==win.get(s.charAt(l))) win.remove(s.charAt(l));
+                l++;
+            }
+            res+=r-l+1;
+        }
+        return res;
+    }
+}
+
+1208. 尽可能使字符串相等
+class Solution {
+    public int equalSubstring(String s, String t, int maxCost) {
+        int n=s.length();
+        int[] diff=new int[n];
+        for(int i=0;i<n;i++) diff[i]=Math.abs(s.charAt(i)-t.charAt(i));
+        int sum=0,res=0;
+        for(int l=0,r=0;r<n;r++){
+            sum+=diff[r];
+            while(sum>maxCost){
+                res=Math.max(res,r-l);
+                sum-=diff[l++];
+            }
+            res=Math.max(res,r-l+1);//因为可能有0存在
+        }
+        return res;
+    }
+}
+
+//前缀和
+1658. 将 x 减到 0 的最小操作数
+//最长字串和=sum-x
+class Solution {
+    public int minOperations(int[] nums, int x) {
+        int all=Arrays.stream(nums).sum();
+        x=all-x;
+        int res=-1,sum=0;
+        for(int l=0,r=0;r<nums.length;r++){
+            sum+=nums[r];
+            while(l<nums.length&&sum>=x){
+                if(sum==x) res=Math.max(res,r-l+1);
+                sum-=nums[l++];
+            }
+        }
+        return res==-1?-1:nums.length-res;
+    }
+}
+
+76. 最小覆盖子串
+class Solution {
+    public String minWindow(String s, String t) {
+        Map<Character,Integer> need=new HashMap<>();
+        Map<Character,Integer> win=new HashMap<>();
+        for(Character c:t.toCharArray()) need.put(c,need.getOrDefault(c,0)+1);
+
+        int end=Integer.MAX_VALUE,start=0,cnt=0;
+        for(int l=0,r=0;r<s.length();r++){
+            if(need.containsKey(s.charAt(r))){
+                win.put(s.charAt(r),win.getOrDefault(s.charAt(r),0)+1);
+                if(win.get(s.charAt(r)).compareTo(need.get(s.charAt(r)))==0) cnt++;
+            }
+            while(cnt>=need.size()){
+                if(r-l<end-start){
+                    start=l;
+                    end=r;
+                }
+                if(need.containsKey(s.charAt(l))){
+                    win.put(s.charAt(l),win.get(s.charAt(l))-1);
+                    if(win.get(s.charAt(l))<need.get(s.charAt(l))) cnt--;
+                }
+                l++;
+            }
+        }
+        return end==Integer.MAX_VALUE?"":s.substring(start,end+1);
+    }
+}
+
+438. 找到字符串中所有字母异位词
+class Solution {
+    public List<Integer> findAnagrams(String s, String p) {
+        Map<Character,Integer> need=new HashMap<>();
+        Map<Character,Integer> win=new HashMap<>();
+        for(Character c:p.toCharArray()) need.put(c,need.getOrDefault(c,0)+1);
+
+        List<Integer> res=new ArrayList<>();
+        int cnt=0;
+        for(int l=0,r=0;r<s.length();r++){
+            if(need.containsKey(s.charAt(r))){
+                win.put(s.charAt(r),win.getOrDefault(s.charAt(r),0)+1);
+                if(win.get(s.charAt(r)).compareTo(need.get(s.charAt(r)))==0) cnt++;
+            }
+            while(cnt>=need.size()){
+                if(r-l+1==p.length()) res.add(l);
+                if(need.containsKey(s.charAt(l))){
+                    win.put(s.charAt(l),win.get(s.charAt(l))-1);
+                    if(win.get(s.charAt(l)).compareTo(need.get(s.charAt(l)))<0) cnt--;
+                }
+                l++;
+            }
+        }
+        return res;
+    }
+}
+
+567. 字符串的排列
+class Solution {
+    public boolean checkInclusion(String s1, String s2) {
+        Map<Character,Integer> need=new HashMap<>();
+        Map<Character,Integer> win=new HashMap<>();
+        for(Character c:s1.toCharArray()) need.put(c,need.getOrDefault(c,0)+1);
+
+        int cnt=0;
+        for(int l=0,r=0;r<s2.length();r++){
+            char cur=s2.charAt(r);
+            if(need.containsKey(cur)){
+                win.put(cur,win.getOrDefault(cur,0)+1);
+                if(win.get(cur).compareTo(need.get(cur))==0) cnt++;
+            }
+            while(cnt>=need.size()){
+                if(r-l+1==s1.length()) return true;
+                char del=s2.charAt(l++);
+                if(need.containsKey(del)){
+                    win.put(del,win.get(del)-1);
+                    if(win.get(del)<need.get(del)) cnt--;
+                }
+            }
+        }
+        return false;
+    }
+}
+
+
+
+
+239. 滑动窗口最大值
+//O(n) O(k)
+class Solution {
+    public int[] maxSlidingWindow(int[] nums, int k) {
+        int[] res=new int[nums.length-k+1];
+        Deque<Integer> win=new ArrayDeque<>();
+        for(int i=0;i<nums.length;i++) {
+            while(!win.isEmpty()&&nums[i]>=nums[win.peekLast()]) win.pollLast();
+            win.offerLast(i);
+            if(i-win.peekFirst()+1>k) win.pollFirst();
+            if(i+1>=k) res[i+1-k]=nums[win.peekFirst()];
+        }
+        return res;
+    }
+}
+
+//O(nlogn) O(n)
+class Solution {
+    public int[] maxSlidingWindow(int[] nums, int k) {
+        int[] res=new int[nums.length-k+1];
+        Queue<int[]> win=new PriorityQueue<>((a,b)->(a[0]!=b[0]?b[0]-a[0]:b[1]-a[1]));
+        for(int i=0;i<nums.length;i++) {
+            win.add(new int[]{nums[i],i});
+            if(win.size()>=k){
+                while(i-win.peek()[1]+1>k) win.poll();
+                res[i+1-k]=win.peek()[0];
+            }
+        }
+        return res;
+    }
+}
+
+Count distinct elements in every window of size k
+//O(n) O(k)
+class Solution {
+    public List<Integer> countDistinct(int[] nums, int k) {
+        List<Integer> res=new ArrayList<>();
+        Deque<Integer> win=new ArrayDeque<>();
+        for(int i=0;i<nums.length;i++){
+           while(!win.isEmpty()&&nums[win.peekLast()]==nums[i]) win.pollLast();
+           win.offerLast(i);
+           if(i-win.peekFirst()+1>k) win.pollFirst();
+           if(i+1>=k) res.add(win.size());
+        }
+        return res;
+    }
+}
+
+1696. 跳跃游戏 VI
+class Solution {
+    public int maxResult(int[] nums, int k) {
+        PriorityQueue<int[]> win=new PriorityQueue<>((a,b)->(b[0]-a[0]));
+        win.offer(new int[]{nums[0],0});
+        int res=nums[0];
+        for(int i=1;i<nums.length;i++){
+           while(win.peek()[1]+k<i) win.poll();
+           res=win.peek()[0]+nums[i];
+           win.offer(new int[]{res,i});
+        }
+        return res;
+    }
+}
+
+class Solution {
+    public int maxResult(int[] nums, int k) {
+        Deque<int[]> win=new ArrayDeque<>();
+        win.addLast(new int[]{nums[0],0});
+        int res=nums[0];
+        for(int i=1;i<nums.length;i++){
+            while(win.getFirst()[1]+k<i) win.pollFirst();
+            res=win.getFirst()[0]+nums[i];
+            while(!win.isEmpty()&&win.getLast()[0]<=res) win.pollLast();
+            win.addLast(new int[]{res,i});
+        }
+        return res;
+    }
+}
+
+480. 滑动窗口中位数
+class Solution {
+    public double[] medianSlidingWindow(int[] nums, int k) {
+        if(nums==null||nums.length==0) return new double[]{};
+        Queue<Integer> maxHeap=new PriorityQueue<>(k,Collections.reverseOrder());
+        Queue<Integer> minHeap=new PriorityQueue<>(k);
+        double[] res=new double[nums.length-k+1];
+        int cnt=0;
+        for(int l=0,r=0;r<nums.length;r++){
+            maxHeap.add(nums[r]);
+            minHeap.add(maxHeap.poll());
+            if(minHeap.size()>maxHeap.size()) maxHeap.add(minHeap.poll());
+            cnt++;
+
+            if(cnt>=k){
+                if(cnt%2==0) res[l]=maxHeap.peek()*0.5+minHeap.peek()*0.5;
+                else res[l]=maxHeap.peek();
+                if(nums[l]<=maxHeap.peek()) maxHeap.remove(nums[l]);
+                else minHeap.remove(nums[l]);
+                l++;
+                cnt--;
+            }
+        }
+        return res;
+    }
+}
+
+class Solution {
+    public double[] medianSlidingWindow(int[] nums, int k) {
+        if(nums==null||nums.length==0) return new double[]{};
+        double[] res=new double[nums.length-k+1];
+        List<Integer> win=new ArrayList<>();
+        for(int i=0;i<nums.length;i++){
+            win.add(insert_search(win,nums[i]),nums[i]);
+            if(i+1>=k){
+                res[i+1-k]=win.get((k-1)/2)*0.5+win.get(k/2)*0.5;
+                win.remove(insert_search(win,nums[i+1-k]));
+            }
+        }
+        return res;
+    }
+    private int insert_search(List<Integer> nums, int target){
+        int l=0,r=nums.size();
+        while(l<r){
+            int m=l+(r-l)/2;
+            if(nums.get(m)<target) l=m+1;
+            else r=m;
+        }
+        return l;
+    }
+}
+
+class Solution {
+    public double[] medianSlidingWindow(int[] nums, int k) {
+        if(nums==null||nums.length==0) return new double[]{};
+        double[] res=new double[nums.length-k+1];
+        List<Integer> win=new ArrayList<>();
+        for(int i=0;i<nums.length;i++){
+            int idx=Collections.binarySearch(win,nums[i]);
+            if(idx<0) idx=~idx;
+            win.add(idx,nums[i]);
+            if(i+1>=k){
+                res[i+1-k]=win.get((k-1)/2)*0.5+win.get(k/2)*0.5;
+                idx=Collections.binarySearch(win,nums[i+1-k]);
+                if(idx<0) idx=~idx;
+                win.remove(idx);
+            }
+        }
+        return res;
+    }
+}

@@ -1,0 +1,1028 @@
+singly-linked list
+public class ListNode {
+    int val;
+    ListNode next;
+    ListNode(int x) { val = x; }
+    ListNode(int x, ListNode nxt) { val = x; next = nxt; }
+}
+
+doubly-linked list
+public class ListNode {
+    int val;
+    ListNode prev,next;
+    ListNode(int x) { val = x; }
+    ListNode(int x, ListNode pre, ListNode nxt) { val = x; prev = pre; next = nxt; }
+}
+
+
+数组模拟链表
+单链表
+class Solution {
+    int head, idx;
+    int[] vals,nexts;
+    void init() {
+        head=-1;
+        idx=0;
+    }
+    void insert(int val){//插入头结点
+        vals[idx]=val;
+        nexts[idx]=head;
+        head=idx++;
+    }
+    void add(int k,int val){
+        vals[idx]=val;
+        nexts[idx]=nexts[k];
+        nexts[k]=idx++;
+    }
+    void remove(){//删除头结点
+        head=nexts[head];
+    }
+}
+
+双链表
+class Solution {
+    int head, idx;
+    int[] vals,nexts,prevs;
+    void init() {
+        prevs[1]=0;
+        nexts[0]=1;
+        idx=2;
+    }
+    void add(int k,int val){
+        vals[idx]=val;
+        prevs[idx]=k;nexts[idx]=nexts[k];
+        prevs[nexts[k]]=idx;nexts[k]=idx++;
+    }
+    void remove(int k){
+        prevs[nexts[k]]=prevs[k];
+        nexts[prevs[k]]=nexts[k];
+    }
+}
+
+
+206. 反转链表
+class Solution {
+    public ListNode reverseList(ListNode head) {
+        ListNode pre=null,cur=head;
+        while(cur!=null){
+            ListNode next=cur.next;
+            cur.next=pre;
+            pre=cur;
+            cur=next;
+        }
+        return pre;
+    }
+}
+
+class Solution {
+    public ListNode reverseList(ListNode head) {
+        return reverse(null,head);
+    }
+    private ListNode reverse(ListNode pre,ListNode cur){
+        if(cur==null) return pre;
+        ListNode next=cur.next;
+        cur.next=pre;
+        return reverse(cur,next);
+    }
+}
+
+class Solution {
+    public ListNode reverseList(ListNode head) {
+        if(head==null||head.next==null) return head;
+        ListNode cur=reverseList(head.next);
+        head.next.next=head;
+        head.next=null;
+        return cur;
+    }
+}
+
+翻转前k个node
+class Solution {
+    public ListNode reverseList(ListNode head,int n){
+        ListNode pre=null,cur=head;
+        for(int i=m;i<n;i++){
+            ListNode next=cur.next;
+            cur.next=pre;
+            pre=cur;
+            cur=next;
+        }
+        head.next=cur;
+        return pre;
+    }
+}
+
+class Solution {
+    ListNode next=null;
+    public ListNode reverseList(ListNode head,int n){
+        if(n==1){
+            next=head.next;
+            return head;
+        }
+        ListNode pre=reverseList(head.next,n-1);
+        head.next.next=head;
+        head.next=next;
+        return pre;
+    }
+}
+
+92. 反转链表 II 翻转[m,n]
+class Solution {
+    public ListNode reverseBetween(ListNode head, int m, int n) {
+        ListNode dummy=new ListNode(0,head),pre=dummy;
+        for(int i=1;i<m;i++) pre=pre.next;
+        ListNode cur=pre.next,start=pre,end=cur;
+        for(int i=m;i<=n;i++){
+            ListNode next=cur.next;
+            cur.next=pre;
+            pre=cur;
+            cur=next;
+        }
+        start.next=pre;
+        end.next=cur;
+        return dummy.next;
+    }
+}
+
+class Solution {
+    ListNode next=null;
+    public ListNode reverseBetween(ListNode head, int m, int n) {
+        if(m==1) return reverseList(head,n);
+        head.next=reverseBetween(head.next,m-1,n-1);
+        return head;
+    }
+    public ListNode reverseList(ListNode head,int n){
+        if(n==1){
+            next=head.next;
+            return head;
+        }
+        ListNode pre=reverseList(head.next,n-1);
+        head.next.next=head;
+        head.next=next;
+        return pre;
+    }
+}
+
+25. K 个一组翻转链表
+class Solution {
+    public ListNode reverseKGroup(ListNode head, int k) {
+        ListNode dummy=new ListNode(0,head),pre=dummy,cur=dummy;
+        while(cur!=null){
+            for(int i=0;i<k&&cur!=null;i++) cur=cur.next;
+            if(cur==null) break;
+
+            ListNode start=pre.next,next=cur.next;
+            cur.next=null;
+            pre.next=reverse(start);
+            start.next=next;
+            pre=start;
+            cur=pre;
+        }
+        return dummy.next;
+    }
+    private ListNode reverse(ListNode head) {
+        ListNode pre=null,cur=head;
+        while(cur!=null){
+            ListNode next=cur.next;
+            cur.next=pre;
+            pre=cur;
+            cur=next;
+        }
+        return pre;
+    }
+}
+
+class Solution {
+    public ListNode reverseKGroup(ListNode head, int k) {
+        if(head==null) return null;
+        ListNode cur=head;
+        for(int i=1;i<k;i++){
+            cur=cur.next;
+            if(cur==null) return head;
+        }
+        ListNode next=cur.next;
+        ListNode start=reverse(head,cur);
+        head.next=reverseKGroup(next,k);
+        return start;
+    }
+    private ListNode reverse(ListNode start,ListNode end) {
+        ListNode pre=null;
+        while(pre!=end){
+            ListNode next=start.next;
+            start.next=pre;
+            pre=start;
+            start=next;
+        }
+        return pre;
+    }
+}
+
+24. 两两交换链表中的节点
+class Solution {
+    public ListNode swapPairs(ListNode head) {
+        if(head==null||head.next==null) return head;
+        ListNode next=head.next;
+        head.next=swapPairs(next.next);
+        next.next=head;
+        return next;
+    }
+}
+
+class Solution {
+    public ListNode swapPairs(ListNode head) {
+        ListNode dummy=new ListNode(0,head),p=dummy;
+        while(p.next!=null&&p.next.next!=null){
+            ListNode pre=p.next,cur=pre.next;
+            p.next=cur;
+            pre.next=cur.next;
+            cur.next=pre;
+            p=pre;
+        }
+        return dummy.next;
+    }
+}
+
+剑指 Offer 06. 从尾到头打印链表
+class Solution {
+    public int[] reversePrint(ListNode head) {
+        List<Integer> res=new ArrayList<>();
+        Stack<Integer> stk=new Stack<>();
+        ListNode p=head;
+        while(p!=null){
+            stk.push(p.val);
+            p=p.next;
+        }
+        while(!stk.isEmpty()) res.add(stk.pop());
+        return res.stream().mapToInt(i->i).toArray();
+    }
+}
+
+class Solution {
+    List<Integer> res=new ArrayList<>();
+    public int[] reversePrint(ListNode head) {
+        if(head==null) return new int[]{};
+        reversePrint(head.next);
+        res.add(head.val);
+        return res.stream().mapToInt(i->i).toArray();
+    }
+}
+
+430. 扁平化多级双向链表
+class Solution {
+    public Node flatten(Node head) {
+        Node p=head;
+        while(p!=null){
+            if(p.child!=null){
+                Node next=p.next,child=p.child;
+                p.next=child;
+                child.prev=p;
+                p.child=null;
+
+                while(child.next!=null) child=child.next;
+                child.next=next;
+                if(next!=null) next.prev=child;
+            }
+            p=p.next;
+        }
+        return head;
+    }
+}
+
+
+快慢指针
+
+倒数第K个node
+class Solution {
+    public ListNode FindKthToTail(ListNode head,int k) {
+        if(head==null||k<=0) return null;
+        ListNode slow=head,fast=head;
+        while(k-->1){
+            if(fast.next!=null) fast=fast.next;
+            else return null;
+        }
+
+        while(fast.next!=null){
+            slow=slow.next;
+            fast=fast.next;
+        }
+        return slow;
+    }
+}
+
+19. 删除链表的倒数第N个节点
+class Solution {
+    public ListNode removeNthFromEnd(ListNode head, int n) {
+        ListNode slow=head,fast=head;
+        while(n-->0){
+            if(fast.next!=null) fast=fast.next;
+            else return head.next;
+        }
+        while(fast.next!=null){
+            slow=slow.next;
+            fast=fast.next;
+        }
+        slow.next=slow.next.next;
+        return head;
+    }
+}
+
+237. 删除链表中的节点
+class Solution {
+    public void deleteNode(ListNode node) {
+        node.val=node.next.val;
+        node.next=node.next.next;
+    }
+}
+
+203. 移除链表元素
+class Solution {
+    public ListNode removeElements(ListNode head, int val) {
+        ListNode dummy=new ListNode(0,head),pre=dummy;
+        while(pre.next!=null){
+            if(pre.next.val==val) pre.next=pre.next.next;
+            else pre=pre.next;
+        }
+        return dummy.next;
+    }
+}
+
+class Solution {
+    public ListNode removeElements(ListNode head, int val) {
+        while(head!=null&&head.val==val) head=head.next;
+        if(head==null) return null;
+
+        ListNode p=head;
+        while(p.next!=null){
+            if(p.next.val==val) p.next=p.next.next;
+            else p=p.next;
+        }
+        return head;
+    }
+}
+
+class Solution {
+    public ListNode removeElements(ListNode head, int val) {
+        if(head==null) return null;
+        head.next=removeElements(head.next,val);
+        if(head.val==val) head=head.next;
+        return head;
+    }
+}
+
+876. 链表的中间结点
+class Solution {
+    public ListNode middleNode(ListNode head) {
+        ListNode slow=head,fast=head;
+        while(fast!=null&&fast.next!=null){
+            slow=slow.next;
+            fast=fast.next.next;
+        }
+        return slow;
+    }
+}
+
+86. 分隔链表
+class Solution {
+    public ListNode partition(ListNode head, int x) {
+        if(head==null) return null;
+        ListNode dummy=new ListNode(0),tail=new ListNode(0);
+        ListNode slow=dummy,fast=tail;
+        while(head!=null){
+            if(head.val<x){
+                slow.next=head;
+                slow=slow.next;
+            }else{
+                fast.next=head;
+                fast=fast.next;
+            }
+            head=head.next;
+        }
+        fast.next=null;
+        slow.next=tail.next;
+        return dummy.next;
+    }
+}
+
+160. 相交链表
+//如果只是判断是否存在交点(编程之美3.6):
+//1.直接比较两个链表的最后一个节点是否相同
+//2.第一个链表结尾连接到第二个链表开头，看第二个链表是否存在环
+public class Solution {
+    public ListNode getIntersectionNode(ListNode headA, ListNode headB) {
+        ListNode p=headA,q=headB;
+        while(p!=q){
+            p=p==null?headB:p.next;
+            q=q==null?headA:q.next;
+        }
+        return p;
+    }
+}
+
+141.环形链表
+class Solution {
+    public boolean hasCycle(ListNode head) {
+        ListNode slow=head,fast=head;
+        while(fast!=null&&fast.next!=null){
+            slow=slow.next;
+            fast=fast.next.next;
+            if(slow==fast) return true;
+        }
+        return false;
+    }
+}
+
+public class Solution {
+    public boolean hasCycle(ListNode head) {
+        Set<ListNode> set = new HashSet<>();
+        while(head!=null){
+            if(set.contains(head)) return true;
+            set.add(head);
+            head=head.next;
+        }
+        return false;
+    }
+}
+
+142. 环形链表 II 环入口      287.寻找重复数
+public class Solution {
+    public ListNode detectCycle(ListNode head) {
+        ListNode slow=head,fast=head;
+        do{
+            if(fast==null||fast.next==null) return null;
+            slow=slow.next;
+            fast=fast.next.next;
+        }while(slow!=fast);
+        slow=head;
+        while(slow!=fast){
+            slow=slow.next;
+            fast=fast.next;
+        }
+        return slow;
+    }
+}
+
+class Solution {
+    public ListNode detectCycle(ListNode head) {
+        Set<ListNode> set=new HashSet<>();
+        while(head!=null&&head.next!=null){
+            if(set.contains(head)) return head;
+            set.add(head);
+            head=head.next;
+        }
+        return null;
+    }
+}
+
+计算环长度
+public class Solution {
+    public int getLoopLength(ListNode head){
+        ListNode slow=head,fast=head;
+        while(true){
+            if(fast==null||fast.next==null) return 0;
+            slow=slow.next;
+            fast=fast.next.next;
+            if(slow==fast) break;
+        }
+        slow=slow.next;fast=fast.next.next;
+        int len=1;
+        while(slow!=fast){
+            slow=slow.next;
+            fast=fast.next.next;
+            len++;
+        }
+        return len;
+    }
+}
+
+61. 旋转链表
+class Solution {
+    public ListNode rotateRight(ListNode head, int k) {
+        if(head==null||head.next==null||k==0) return head;
+        int len=0;
+        ListNode p=head;
+        while(p!=null){
+            len++;
+            p=p.next;
+        }
+        int num=k%len;
+        if(num==0) return head;
+
+        ListNode slow=head,fast=head;
+        while(num-->0) fast=fast.next;
+        while(fast.next!=null){
+            slow=slow.next;
+            fast=fast.next;
+        }
+
+        ListNode newHead=slow.next;
+        fast.next=head;
+        slow.next=null;
+        return newHead;
+    }
+}
+
+class Solution {
+    public ListNode rotateRight(ListNode head, int k) {
+        if(head==null||head.next==null||k==0) return head;
+        int len=1;
+        ListNode p=head;
+        while(p.next!=null){
+            len++;
+            p=p.next;
+        }
+        k=k%len;
+        if(k==0) return head;
+
+        ListNode newHead=head, newTail=head;
+        for(int i=0;i<len-k-1;i++){
+            newTail=newTail.next;
+            newHead=newTail.next;
+        }
+        p.next=head;
+        newTail.next=null;
+        return newHead;
+    }
+}
+
+143. 重排链表
+class Solution {
+    public void reorderList(ListNode head) {
+        if(head==null||head.next==null) return;
+        ListNode slow=head,fast=head;
+        while(fast.next!=null&&fast.next.next!=null) {
+            slow=slow.next;
+            fast=fast.next.next;
+        }
+        ListNode newHead=slow.next;
+        slow.next=null;
+
+        newHead=reverseList(newHead);
+        while(newHead!=null){
+            ListNode next=newHead.next;
+            newHead.next=head.next;
+            head.next=newHead;
+            head=newHead.next;
+            newHead=next;
+        }
+    }
+    private ListNode reverseList(ListNode head) {
+        if(head==null) return null;
+        ListNode pre=head,cur=head.next;
+        pre.next=null;
+        while(cur!=null){
+            ListNode next=cur.next;
+            cur.next=pre;
+            pre=cur;
+            cur=next;
+        }
+        return pre;
+    }
+}
+
+class Solution {
+    public void reorderList(ListNode head) {
+        if(head==null||head.next==null) return;
+        int len=0;
+        ListNode p=head;
+        while(p!=null) {
+            len++;
+            p=p.next;
+        }
+        dfs(head, len);
+    }
+    private ListNode dfs(ListNode head,int len) {
+        if(len==0) return null;
+        if(len==1) return head;
+        if(len==2) return head.next;
+        ListNode tail=dfs(head.next,len-2);
+        ListNode next=tail.next;
+        tail.next=tail.next.next;
+        next.next=head.next;
+        head.next=next;
+        return tail;
+    }
+}
+
+234. 回文链表
+class Solution {
+    ListNode left;
+    public boolean isPalindrome(ListNode head) {
+        left=head;
+        return dfs(head);
+    }
+    public boolean dfs(ListNode right){
+        if(right==null) return true;
+        boolean res=dfs(right.next);
+        res=res&&(left.val==right.val);
+        left=left.next;
+        return res;
+    }
+}
+
+//边遍历边翻转
+class Solution {
+    public boolean isPalindrome(ListNode head) {
+        if(head==null||head.next==null) return true;
+        ListNode pre=null,cur=null;
+        ListNode slow=head,fast=head;
+        while(fast!=null&&fast.next!=null){
+            cur=slow;
+            slow=slow.next;
+            fast=fast.next.next;
+
+            cur.next=pre;
+            pre=cur;
+        }
+        if(fast!=null) slow=slow.next;
+        while(cur!=null){
+            if(cur.val!=slow.val) return false;
+            cur=cur.next;
+            slow=slow.next;
+        }
+        return true;
+    }
+}
+
+//https://leetcode-cn.com/problems/palindrome-linked-list/solution/ha-xi-bian-li-yi-ci-jiu-xing-by-tcan1993/
+//回文串的正反哈希相等, 英文字母串通常选seed=131
+//哈希公式: hash=hash*seed+val, 其中seed是一个质数, val是节点值
+class Solution {
+    public boolean isPalindrome(ListNode head) {
+        long hash1=0,hash2=0,pro=1,seed=(long)(1e9+7);
+        ListNode p=head;
+        while(p!=null){
+            hash1=hash1*seed+p.val;
+            hash2=hash2+pro*p.val;
+            pro*=seed;
+            p=p.next;
+        }
+        return hash1==hash2;
+    }
+}
+
+817. 链表组件
+class Solution {
+    public int numComponents(ListNode head, int[] G) {
+        Set<Integer> set=new HashSet();
+        for(int x:G) set.add(x);
+
+        int res=0;
+        ListNode p=head;
+        while(p!=null){
+            if(set.contains(p.val)&&(p.next==null||!set.contains(p.next.val))) res++;
+            p=p.next;
+        }
+        return res;
+    }
+}
+
+21. 合并两个有序链表
+class Solution {
+    public ListNode mergeTwoLists(ListNode l1, ListNode l2) {
+        ListNode dummy=new ListNode(-1),p=dummy;
+        while(l1!=null&&l2!=null){
+            if(l1.val<l2.val){
+                p.next=l1;
+                l1=l1.next;
+            }else{
+                p.next=l2;
+                l2=l2.next;
+            }
+            p=p.next;
+        }
+        p.next=l1==null?l2:l1;
+        return dummy.next;
+    }
+}
+
+class Solution {
+    public ListNode mergeTwoLists(ListNode l1, ListNode l2) {
+        if(l1==null) return l2;
+        if(l2==null) return l1;
+        if(l1.val<l2.val){
+            l1.next=mergeTwoLists(l1.next,l2);
+            return l1;
+        }else{
+            l2.next=mergeTwoLists(l1,l2.next);
+            return l2;
+        }
+    }
+}
+
+1669. 合并两个链表
+class Solution {
+    public ListNode mergeInBetween(ListNode list1, int a, int b, ListNode list2) {
+        ListNode dummy=list1;
+        for(int i=0;i<a-1;i++) list1=list1.next;
+        ListNode cur=list1.next;
+        list1.next=list2;
+        for(int i=a;i<b;i++) cur=cur.next;
+        while(list1.next!=null) list1=list1.next;
+        list1.next=cur.next;
+        return dummy;
+    }
+}
+
+83. 删除排序链表中的重复元素
+class Solution {
+    public ListNode deleteDuplicates(ListNode head) {
+        if(head==null) return null;
+        ListNode p=head;
+        while(p!=null&&p.next!=null){
+            if(p.val==p.next.val) p.next=p.next.next;
+            else p=p.next;
+        }
+        return head;
+    }
+}
+
+class Solution {
+    public ListNode deleteDuplicates(ListNode head) {
+        if(head==null||head.next==null) return head;
+        head.next=deleteDuplicates(head.next);
+        return head.val==head.next.val?head.next:head;
+    }
+}
+
+82. 删除排序链表中的重复元素 II
+class Solution {
+    public ListNode deleteDuplicates(ListNode head) {
+        if(head==null||head.next==null) return head;
+        ListNode dummy=new ListNode(0,head),pre=dummy;
+        while(pre!=null&&pre.next!=null){
+            ListNode cur=pre.next;
+            if(cur.next==null||cur.val!=cur.next.val) pre=cur;
+            else{
+                while(cur.next!=null&&cur.val==cur.next.val) cur=cur.next;
+                pre.next=cur.next;
+            }
+        }
+        return dummy.next;
+    }
+}
+
+class Solution {
+    public ListNode deleteDuplicates(ListNode head) {
+        if(head==null||head.next==null) return head;
+        if(head.val!=head.next.val){
+            head.next=deleteDuplicates(head.next);
+            return head;
+        }else{
+            ListNode cur=head.next;
+            while(cur.next!=null&&cur.val==cur.next.val) cur=cur.next;
+            return deleteDuplicates(cur.next);
+        }
+    }
+}
+
+328. 奇偶链表
+class Solution {
+    public ListNode oddEvenList(ListNode head) {
+        if(head==null) return null;
+        ListNode odd=head,even=head.next,dummy=even;
+        while(even!=null&&even.next!=null){
+            odd.next=even.next;
+            odd=odd.next;
+            even.next=odd.next;
+            even=even.next;
+        }
+        odd.next=dummy;
+        return head;
+    }
+}
+
+2. 两数相加  链表求和
+class Solution {
+    public ListNode addTwoNumbers(ListNode l1, ListNode l2) {
+        ListNode dummy=new ListNode(0),cur=dummy;
+        int carry=0;
+        while(l1!=null||l2!=null||carry!=0){
+            int x=l1==null?0:l1.val;
+            int y=l2==null?0:l2.val;
+            int sum=x+y+carry;
+            carry=sum/10;
+            cur.next=new ListNode(sum%10);
+            cur=cur.next;
+            if(l1!=null) l1=l1.next;
+            if(l2!=null) l2=l2.next;
+        }
+        return dummy.next;
+    }
+}
+
+445. 两数相加 II  链表求和
+class Solution {
+    public ListNode addTwoNumbers(ListNode l1, ListNode l2) {
+        Stack<Integer> stk1=new Stack<>();
+        Stack<Integer> stk2=new Stack<>();
+        while(l1!=null){
+            stk1.push(l1.val);
+            l1=l1.next;
+        }
+        while(l2!=null){
+            stk2.push(l2.val);
+            l2=l2.next;
+        }
+
+        int carry=0;
+        ListNode head=null;
+        while(!stk1.isEmpty()||!stk2.isEmpty()||carry!=0){
+            int x=stk1.isEmpty()?0:stk1.pop();
+            int y=stk2.isEmpty()?0:stk2.pop();
+            int sum=x+y+carry;
+            ListNode cur=new ListNode(sum%10);
+            cur.next=head;
+            head=cur;
+            carry=sum/10;
+        }
+        return head;
+    }
+}
+
+725. 分隔链表
+class Solution {
+    public ListNode[] splitListToParts(ListNode root, int k) {
+        int n=0;
+        ListNode p=root;
+        while(p!=null){
+            n++;
+            p=p.next;
+        }
+        int size=n/k,mod=n%k;
+        ListNode[] res=new ListNode[k];
+        Arrays.fill(res,null);
+        ListNode pre=null,cur=root;
+        for(int i=0;i<k;i++){
+            res[i]=cur;
+            int curs=mod!=0?size+1:size;
+            if(mod!=0) mod--;
+            while(curs-->0){
+                pre=cur;
+                cur=cur.next;
+            }
+            if(pre!=null) pre.next=null;
+        }
+        return res;
+    }
+}
+
+147. 对链表进行插入排序
+class Solution {
+    public ListNode insertionSortList(ListNode head) {
+        if(head==null||head.next==null) return head;
+        ListNode dummy=new ListNode(0,head);
+        ListNode cur=head;
+        while(cur!=null&&cur.next!=null){
+            if(cur.val<=cur.next.val) cur=cur.next;
+            else{
+                ListNode next=cur.next;
+                cur.next=cur.next.next;
+                head=head.val<=next.val?head:dummy;
+                while(head.next.val<=next.val) head=head.next;
+                next.next=head.next;
+                head.next=next;
+            }
+        }
+        return dummy.next;
+    }
+}
+
+148. 排序链表  Merge Sort
+
+1171. 从链表中删去总和值为零的连续节点
+class Solution {
+    public ListNode removeZeroSumSublists(ListNode head) {
+        if(head==null) return head;
+        ListNode dummy=new ListNode(0,head),p=dummy;
+        Map<Integer,ListNode> map=new HashMap<>();
+        int sum=0;
+        while(p!=null){
+            sum+=p.val;
+            map.put(sum,p);
+            p=p.next;
+        }
+        p=dummy;
+        sum=0;
+        while(p!=null){
+            sum+=p.val;
+            p.next=map.get(sum).next;
+            p=p.next;
+        }
+        return dummy.next;
+    }
+}
+
+138. 复制带随机指针的链表
+//O(n) O(n)
+class Solution {
+    public Node copyRandomList(Node head) {
+        if(head==null) return null;
+        Map<Node,Node> map=new HashMap<>();
+
+        Node cur=head;
+        while(cur!=null){
+            map.put(cur,new Node(cur.val));
+            cur=cur.next;
+        }
+        cur=head;
+        while(cur!=null){
+            map.get(cur).next=map.get(cur.next);
+            map.get(cur).random=map.get(cur.random);
+            cur=cur.next;
+        }
+        return map.get(head);
+    }
+}
+
+class Solution {
+    public Node copyRandomList(Node head) {
+        if(head==null) return null;
+        Node cur=head;
+        while(cur!=null){
+            Node tmp=new Node(cur.val);
+            tmp.next=cur.next;
+            cur.next=tmp;
+            cur=tmp.next;
+        }
+        cur=head;
+        while(cur!=null){
+            if(cur.random!=null) cur.next.random=cur.random.next;
+            cur=cur.next.next;
+        }
+        cur=head;
+        Node res=head.next;
+        while(cur!=null){
+            Node tmp=cur.next;
+            cur.next=tmp.next;
+            if(tmp.next!=null) tmp.next=tmp.next.next;
+            cur=cur.next;
+        }
+        return res;
+    }
+}
+
+//d2c
+109. 有序链表转换二叉搜索树
+class Solution {
+    public TreeNode sortedListToBST(ListNode head) {
+        if(head==null) return null;
+        if(head.next==null) return new TreeNode(head.val);
+        ListNode pre=null,slow=head,fast=head;
+        while(fast!=null&&fast.next!=null){
+            pre=slow;
+            slow=slow.next;
+            fast=fast.next.next;
+        }
+        pre.next=null;
+
+        TreeNode root=new TreeNode(slow.val);
+        root.left=sortedListToBST(head);
+        root.right=sortedListToBST(slow.next);
+        return root;
+    }
+}
+
+class Solution {
+    public TreeNode sortedListToBST(ListNode head) {
+        List<Integer> list=new ArrayList<>();
+        while(head!=null){
+            list.add(head.val);
+            head=head.next;
+        }
+        return d2c(list,0,list.size()-1);
+    }
+    public TreeNode d2c(List<Integer> list, int l, int r){
+        if(l>r) return null;
+        int mid=(l+r)>>>1;
+        TreeNode root=new TreeNode(list.get(mid));
+        root.left=d2c(list,l,mid-1);
+        root.right=d2c(list,mid+1,r);
+        return root;
+    }
+}
+
+//中序遍历
+class Solution {
+    ListNode p;
+    public TreeNode sortedListToBST(ListNode head) {
+        if(head==null) return null;
+        int len=0;
+        p=head;
+        while(head!=null){
+            len++;
+            head=head.next;
+        }
+        return dfs(0,len-1);
+    }
+    public TreeNode dfs(int l, int r){
+        if(l>r) return null;
+        int mid=(l+r)>>>1;
+        TreeNode left=dfs(l,mid-1);
+
+        TreeNode root=new TreeNode(p.val);
+        p=p.next;
+        root.left=left;
+
+        root.right=dfs(mid+1,r);
+        return root;
+    }
+}

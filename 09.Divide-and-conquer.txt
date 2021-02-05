@@ -1,0 +1,229 @@
+分治法: 归并排序, 快速排序
+
+分解：按运算符分成左右两部分，分别求解
+解决：实现一个递归函数，输入算式，返回算式解
+合并：根据运算符合并左右两部分的解，得出最终解
+
+主定理
+T(n)=aT(n/b)+f(n) a>=1,b>1  n问题规模, a递归子问题数量，n/b每个子问题规模，f(n)递归以外计算工作
+1. 如果存在c>0满足 f(n)=O( n^(logb(a)-c) )，那么 T(n)=O( n^(logb(a)) )
+2. 如果存在c≥0满足 f(n)=O( n^(logb(a)) (log(n))^c )，那么 T(n)=O( n^(logb(a)) (log(n))^(c+1) )
+
+一般平分数组: T(n)=2T(n/2)+2n: 求解2个长度为n/2的子问题，并做2遍长度为n的线性扫描
+二分搜索: T(n)=T(n/2)+O(1)  O(logn)  2.
+二叉树遍历: T(n)=2T(n/2)+O(1)  O(n)   1.
+合并排序: T(n)=2T(n/2)+O(n)  O(nlogn)  2.
+
+
+
+241. 为运算表达式设计优先级
+class Solution {
+    public List<Integer> diffWaysToCompute(String input) {
+        List<Integer> res=new ArrayList<>();
+        for(int i=0;i<input.length();i++){
+            char c=input.charAt(i);
+            if(c=='+'||c=='-'||c=='*'){
+                List<Integer> left=diffWaysToCompute(input.substring(0,i));
+                List<Integer> right=diffWaysToCompute(input.substring(i+1));
+                for(int l:left){
+                    for(int r:right){
+                        if(c=='+') res.add(l+r);
+                        else if(c=='-') res.add(l-r);
+                        else if(c=='*') res.add(l*r);
+                    }
+                }
+            }
+        }
+        if(res.isEmpty()) res.add(Integer.parseInt(input));
+        return res;
+    }
+}
+
+//dp=分治+memoization
+class Solution {
+    public List<Integer> diffWaysToCompute(String input) {
+        List<Integer> data=new ArrayList<>();
+        List<Character> ops=new ArrayList<>();
+        int num=0;
+        for(char c:input.toCharArray()){
+            if(!Character.isDigit(c)){
+                data.add(num);
+                ops.add(c);
+                num=0;
+            }else{
+                num=num*10+c-'0';
+            }
+        }
+        data.add(num);
+
+        int n=data.size();
+        List<Integer>[][] dp=new ArrayList[n][n];
+        for(int i=0;i<n;i++){
+            for(int j=i;j>=0;j--){
+                dp[j][i]=new ArrayList<>();
+                if(i==j) dp[j][i].add(data.get(i));
+                else{
+                    for(int k=j;k<i;k++){
+                        for(Integer l:dp[j][k]){
+                            for(Integer r:dp[k+1][i]){
+                                int val=0;
+                                switch(ops.get(k)){
+                                    case '+': val=l+r;break;
+                                    case '-': val=l-r;break;
+                                    case '*': val=l*r;break;
+                                }
+                                dp[j][i].add(val);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return dp[0][n-1];
+    }
+}
+
+//Math
+169. 多数元素
+class Solution {
+    public int majorityElement(int[] nums) {
+        return dnc(nums,0,nums.length-1);
+    }
+    public int dnc(int[] nums,int l,int r){
+        if(l>=r) return nums[l];
+        int mid=l+((r-l)>>>1);
+        int left=dnc(nums,l,mid);
+        int right=dnc(nums,mid+1,r);
+        if(left==right) return left;
+
+        int lcnt=count(nums,l,mid,left);
+        int rcnt=count(nums,mid+1,r,right);
+        return lcnt>rcnt?left:right;
+
+    }
+    private int count(int[] nums,int l,int r,int t){
+        int cnt=0;
+        for(int i=l;i<=r;i++) if(nums[i]==t) cnt++;
+        return cnt;
+    }
+}
+
+//dp
+53. 最大子序和
+class Solution {
+    public int maxSubArray(int[] nums) {
+        return dnc(nums,0,nums.length-1);
+    }
+    public int dnc(int[] nums,int l,int r){
+        if(l>=r) return nums[l];
+        int mid=l+((r-l)>>>1);
+        int left=dnc(nums,l,mid);
+        int right=dnc(nums,mid+1,r);
+
+        int lsum=0,lmax=nums[mid];;
+        for(int i=mid;i>=l;i--){
+            lsum+=nums[i];
+            lmax=Math.max(lmax,lsum);
+        }
+        int rsum=0,rmax=nums[mid+1];
+        for(int i=mid+1;i<=r;i++){
+            rsum+=nums[i];
+            rmax=Math.max(rmax,rsum);
+        }
+        return Math.max(lmax+rmax,Math.max(left,right));
+    }
+}
+
+240. 搜索二维矩阵 II
+class Solution {
+    public boolean searchMatrix(int[][] matrix, int target) {
+        if(matrix.length==0||matrix[0].length==0) return false;
+        return dnc(matrix,0,matrix[0].length-1,target);
+    }
+    public boolean dnc(int[][] matrix,int i,int j,int target){
+        if(i<0||i>=matrix.length||j<0||j>=matrix[0].length) return false;
+        if(matrix[i][j]<target) return dnc(matrix,i+1,j,target);
+        else if(matrix[i][j]>target) return dnc(matrix,i,j-1,target);
+        else return true;
+    }
+}
+
+932. 漂亮数组
+//A[k]*2=A[i]+A[j]左侧为偶数,所以只需i为奇数,j为偶数,加起来即为奇数
+class Solution {
+    public int[] beautifulArray(int N) {
+        int[] nums=new int[N];
+        Arrays.fill(nums,1);
+        dnc(nums,0,N-1);
+        return nums;
+    }
+    public void dnc(int[] nums,int l,int r){
+        if(l>=r) return;
+        int mid=l+((r-l)>>>1);
+        dnc(nums,l,mid);
+        dnc(nums,mid+1,r);
+
+        for(int i=l;i<=mid;i++) nums[i]=2*nums[i]-1;
+        for(int i=mid+1;i<=r;i++) nums[i]=2*nums[i];
+        return;
+    }
+}
+
+654. 最大二叉树
+class Solution {
+    public TreeNode constructMaximumBinaryTree(int[] nums) {
+        return construct(nums,0,nums.length-1);
+    }
+    public TreeNode construct(int[] nums,int l,int r){
+        if(l>r) return null;
+        int max=Integer.MIN_VALUE,idx=0;
+        for(int i=l;i<=r;i++){
+            if(max<nums[i]){
+                max=nums[i];
+                idx=i;
+            }
+        }
+
+        TreeNode node=new TreeNode(max);
+        node.left=construct(nums,l,idx-1);
+        node.right=construct(nums,idx+1,r);
+        return node;
+    }
+}
+
+108. 将有序数组转换为二叉搜索树
+class Solution {
+    public TreeNode sortedArrayToBST(int[] nums) {
+        if(nums.length==0) return null;
+        return d2c(nums,0,nums.length-1);
+    }
+    public TreeNode d2c(int[] nums,int l,int r){
+        if(l>r) return null;
+        int mid=(l+r)>>>1;
+        TreeNode root=new TreeNode(nums[mid]);
+        root.left=d2c(nums,l,mid-1);
+        root.right=d2c(nums,mid+1,r);
+        return root;
+    }
+}
+
+//链表
+109. 有序链表转换二叉搜索树
+class Solution {
+    public TreeNode sortedListToBST(ListNode head) {
+        List<Integer> list=new ArrayList<>();
+        while(head!=null){
+            list.add(head.val);
+            head=head.next;
+        }
+        return d2c(list,0,list.size()-1);
+    }
+    public TreeNode d2c(List<Integer> list, int l, int r){
+        if(l>r) return null;
+        int mid=(l+r)>>>1;
+        TreeNode root=new TreeNode(list.get(mid));
+        root.left=d2c(list,l,mid-1);
+        root.right=d2c(list,mid+1,r);
+        return root;
+    }
+}

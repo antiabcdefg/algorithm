@@ -1,0 +1,485 @@
+DoubleLinkedList
+插入有序
+O(1)获取最大值最小值  + build时修改
+O(logn)获取最大值最小值  + TreeMap
+O(1)查找元素  + map
+
+class Node {
+    int val;
+    Node prev,next;
+    public Node() {
+
+    }
+    public Node(int val) {
+        this.val=value;
+    }
+}
+class DoubleLinkedList {
+    Node head,tail;
+    public DoubleLinkedList() {
+        head=new Node();
+        tail=new Node();
+        head.next=tail;
+        tail.prev=head;
+    }
+    public void addFirst(Node cur) {
+        cur.next=head.next;
+        head.next.prev=cur;
+        cur.prev=head;
+        head.next=cur;
+    }
+    public void add(Node cur) {
+        cur.next=tail;
+        cur.prev=tail.prev;
+        tail.prev=cur.prev.next=cur;
+    }
+    public void insert(Node cur,Node newNode) {
+        newNode.next=cur.next;
+        newNode.prev=cur;
+        cur.next.prev=newNode;
+        cur.next=newNode;
+    }
+    public void remove(Node cur) {
+        cur.prev.next=cur.next;
+        cur.next.prev=cur.prev;
+    }
+    public Node getFirst() {
+        return head.next;
+    }
+    public Node getLast() {
+        return tail.prev;
+    }
+}
+
+
+
+
+
+355. 设计推特
+class Twitter {
+    private static int timestamp = 0;
+    private Map<Integer,Tweet> twitter;
+    private Map<Integer,Set<Integer>> following;
+    private static PriorityQueue<Tweet> maxHeap;
+
+    private class Tweet {
+        private int id;
+        private int timestamp;
+        private Tweet next;
+
+        public Tweet(int id, int timestamp) {
+            this.id=id;
+            this.timestamp=timestamp;
+        }
+    }
+    public Twitter() {
+        twitter=new HashMap<>();
+        following=new HashMap<>();
+        maxHeap=new PriorityQueue<>((a,b)->b.timestamp-a.timestamp);
+    }
+    public void postTweet(int userId, int tweetId) {
+        timestamp++;
+        if(!twitter.containsKey(userId)) twitter.put(userId,new Tweet(tweetId,timestamp));
+        else{
+            Tweet n=new Tweet(tweetId,timestamp);
+            Tweet o=twitter.get(userId);
+            n.next=o;
+            twitter.put(userId,n);
+        }
+    }
+    public List<Integer> getNewsFeed(int userId) {
+        maxHeap.clear();
+        if(twitter.containsKey(userId)) maxHeap.offer(twitter.get(userId));
+
+        Set<Integer> followingList=following.get(userId);
+        if (followingList!=null&&followingList.size()>0) {
+            for(Integer i:followingList){
+                Tweet t=twitter.get(i);
+                if(t!=null) maxHeap.offer(t);
+            }
+        }
+
+        List<Integer> res=new ArrayList<Integer>(10);
+        for(int i=0;!maxHeap.isEmpty()&&i<10;i++){
+            Tweet t=maxHeap.poll();
+            res.add(t.id);
+            if(t.next!=null) maxHeap.offer(t.next);
+        }
+        return res;
+    }
+    public void follow(int followerId, int followeeId) {
+        if(followerId==followeeId) return;
+        Set<Integer> followingList=following.get(followerId);
+        if(followingList==null){
+            Set<Integer> init=new HashSet<>();
+            init.add(followeeId);
+            following.put(followerId,init);
+        }else{
+            if(followingList.contains(followeeId)) return;
+            followingList.add(followeeId);
+        }
+    }
+    public void unfollow(int followerId, int followeeId) {
+        if(followerId==followeeId) return;
+        Set<Integer> followingList=following.get(followerId);
+        if(followingList==null) return;
+        else followingList.remove(followeeId);
+    }
+}
+
+146. LRU缓存机制
+//Hashmap + Doubly linked list
+class Node {
+    int key,val;
+    Node prev,next;
+    public Node() {
+
+    }
+    public Node(int key, int val) {
+        this.key=key;
+        this.val=value;
+    }
+}
+class DoubleLinkedList {
+    Node head,tail;
+    public DoubleLinkedList() {
+        head=new Node();
+        tail=new Node();
+        head.next=tail;
+        tail.prev=head;
+    }
+    public void addFirst(Node cur) {
+        cur.next=head.next;
+        head.next.prev=cur;
+        cur.prev=head;
+        head.next=cur;
+    }
+    public void remove(Node cur) {
+        cur.prev.next=cur.next;
+        cur.next.prev=cur.prev;
+    }
+    public Node getFirst() {
+        return head.next;
+    }
+    public Node getLast() {
+        return tail.prev;
+    }
+}
+class LRUCache {
+    public int cap;
+    public Map<Integer, Node> map = new HashMap<>();
+    public DoubleLinkedList list=new DoubleLinkedList();
+    public LRUCache(int capacity) {
+        this.cap=capacity;
+    }
+    public int get(int key) {
+        if(!map.containsKey(key)) return -1;
+        Node cur=map.get(key);
+        list.remove(cur);
+        list.addFirst(cur);
+        return cur.val;
+    }
+    public void put(int key, int value) {
+        if(map.containsKey(key)){
+            Node cur=map.get(key);
+            cur.val=value;
+            map.put(key,cur);
+            list.remove(cur);
+            list.addFirst(cur);
+        }else{
+            if(map.size()==cap){
+                Node cur=list.getLast();
+                map.remove(cur.key);
+                list.remove(cur);
+            }
+            Node cur=new Node(key,value);
+            map.put(key,cur);
+            list.addFirst(cur);
+        }
+    }
+}
+
+//LinkedHashMap
+class LRUCache {
+    public int cap;
+    public Map<Integer,Integer> map=new LinkedHashMap<>();
+    public LRUCache(int capacity) {
+        this.cap=capacity;
+    }
+
+    public int get(int key) {
+        if(map.containsKey(key)){
+            int val=map.get(key);
+            map.remove(key);
+            map.put(key,val);
+            return val;
+        }
+        return -1;
+    }
+
+    public void put(int key, int value) {
+        if(map.containsKey(key)){
+            map.remove(key);
+        }else if(map.size()==cap){
+            Iterator<Map.Entry<Integer, Integer>> iterator = map.entrySet().iterator();
+            iterator.next();
+            iterator.remove();
+        }
+        map.put(key,value);
+    }
+}
+
+class LRUCache {
+    int capacity;
+    LinkedHashMap<Integer, Integer> cache;
+
+    public LRUCache(int capacity) {
+        this.capacity = capacity;
+        cache = new LinkedHashMap<Integer, Integer>(capacity, 0.75f, true) {
+            @Override
+            protected boolean removeEldestEntry(Map.Entry eldest) {
+                return cache.size() > capacity;
+            }
+        };
+    }
+
+    public int get(int key) {
+        return cache.getOrDefault(key, -1);
+    }
+
+    public void put(int key, int value) {
+        cache.put(key, value);
+    }
+}
+
+460. LFU缓存
+class LFUCache {
+    private HashMap<Integer,Integer> key2val;
+    private HashMap<Integer,Integer> key2freq;
+    private HashMap<Integer,LinkedHashSet<Integer>> freq2key;
+    private int minfreq;
+    private int cap;
+    public LFUCache(int capacity) {
+        key2val=new HashMap<>();
+        key2freq=new HashMap<>();
+        freq2key=new HashMap<>();
+        this.cap=capacity;
+        this.minfreq=0;
+    }
+
+    public int get(int key) {
+        if(!key2val.containsKey(key)) return -1;
+        increaseFreq(key);
+        return key2val.get(key);
+    }
+
+    public void put(int key, int value) {
+        if(cap<=0) return;
+        if(key2val.containsKey(key)){
+            key2val.put(key,value);
+            increaseFreq(key);
+            return;
+        };
+        if(key2val.size()>=this.cap) removeMin();
+        key2val.put(key,value);
+        key2freq.put(key,1);
+        freq2key.putIfAbsent(1,new LinkedHashSet<>());
+        freq2key.get(1).add(key);
+        this.minfreq=1;
+    }
+    public void removeMin(){
+        LinkedHashSet<Integer> cur=freq2key.get(this.minfreq);
+        int del=cur.iterator().next();
+        cur.remove(del);
+        if(cur.isEmpty()){
+            freq2key.remove(this.minfreq);
+            this.minfreq++;
+        }
+        key2val.remove(del);
+        key2freq.remove(del);
+    }
+    public void increaseFreq(int key){
+        int freq=key2freq.get(key);
+        key2freq.put(key,freq+1);
+        freq2key.get(freq).remove(key);
+        freq2key.putIfAbsent(freq+1,new LinkedHashSet<>());
+        freq2key.get(freq+1).add(key);
+        if(freq2key.get(freq).isEmpty()){
+            freq2key.remove(freq);
+            if(freq==this.minfreq) minfreq++;
+        }
+    }
+}
+
+380. 常数时间插入、删除和获取随机元素
+//O(1)
+class RandomizedSet {
+    List<Integer> list;
+    Map<Integer,Integer> map;
+    public RandomizedSet() {
+        list=new ArrayList<>();
+        map=new HashMap<>();
+    }
+    public boolean insert(int val) {
+        if(map.containsKey(val)) return false;
+
+        map.put(val,list.size());
+        list.add(val);
+        return true;
+    }
+    public boolean remove(int val) {
+        if(!map.containsKey(val)) return false;
+
+        int size=map.get(val);
+        map.put(list.get(list.size()-1),size);
+        map.remove(val);
+        list.set(size,list.get(list.size()-1));
+        list.remove(list.size()-1);
+        return true;
+    }
+    public int getRandom() {
+        return list.get(new Random().nextInt(list.size()));
+    }
+}
+
+432. 全 O(1) 的数据结构
+O(1)时间内查询->hashmap
+O(1)时间内得到最大值和最小值->直接获得->本身有序->双向链表
+O(1)时间内修改->list不能用->双向链表
+
+双向链表->插入有顺序
+
+class Node {
+    int val;
+    HashSet<String> set;
+    Node prev,next;
+    public Node() {
+
+    }
+    public Node(int value) {
+        val=value;
+        set=new HashSet<>();
+    }
+}
+class DoubleLinkedList {
+    Node head,tail;
+    public DoubleLinkedList() {
+        head=new Node();
+        tail=new Node();
+        head.next=tail;
+        tail.prev=head;
+    }
+    public void insert(Node cur,Node newNode) {
+        newNode.next=cur.next;
+        newNode.prev=cur;
+        cur.next.prev=newNode;
+        cur.next=newNode;
+    }
+    public void remove(Node cur) {
+        cur.prev.next=cur.next;
+        cur.next.prev=cur.prev;
+    }
+    public Node getFirst() {
+        return head.next==tail?null:head.next;
+    }
+    public Node getLast() {
+        return tail.prev==head?null:tail.prev;
+    }
+}
+class AllOne {
+    HashMap<String,Node> map;//保存key所在node
+    DoubleLinkedList list;//保存val关系
+    public AllOne() {
+        map=new HashMap<>();
+        list=new DoubleLinkedList();
+    }
+    public void inc(String key) {
+        if(!map.containsKey(key)){
+            Node cur=list.getFirst();
+            if(cur==null||cur.val!=1){
+                cur=new Node(1);
+                list.insert(list.head,cur);
+            }
+            cur.set.add(key);
+            map.put(key,cur);
+        }else{
+            Node old=map.get(key),newNode=old.next;
+            if(old.val+1!=newNode.val){
+                newNode=new Node(old.val+1);
+                list.insert(old,newNode);
+            }
+            newNode.set.add(key);
+            old.set.remove(key);
+            if(old.set.isEmpty()) list.remove(old);
+            map.put(key,newNode);
+        }
+    }
+    public void dec(String key) {
+        if(!map.containsKey(key)) return;
+        Node old=map.get(key);
+        if(old.val==1) map.remove(key);
+        else{
+            Node newNode=old.prev;
+            if(newNode.val+1!=old.val){
+                Node pre=newNode;
+                newNode=new Node(old.val-1);
+                list.insert(pre,newNode);
+            }
+            newNode.set.add(key);
+            map.put(key,newNode);
+        }
+        old.set.remove(key);
+        if(old.set.isEmpty()) list.remove(old);
+    }
+    public String getMaxKey() {
+        return list.getLast()==null?"":list.getLast().set.iterator().next();
+    }
+    public String getMinKey() {
+        return list.getFirst()==null?"":list.getFirst().set.iterator().next();
+    }
+}
+
+895. 最大频率栈  Top K
+class FreqStack {
+    Map<Integer,Integer> map;
+    PriorityQueue<int[]> q;
+    int idx=0;
+    public FreqStack() {
+        map=new HashMap<>();
+        q=new PriorityQueue<>((a,b)->(b[1]==a[1]?b[2]-a[2]:b[1]-a[1]));
+    }
+    public void push(int x) {
+        int cnt=map.getOrDefault(x,0)+1;
+        map.put(x,cnt);
+        q.offer(new int[]{x,cnt,idx++});
+    }
+    public int pop() {
+        int[] cur=q.poll();
+        map.put(cur[0],cur[1]-1);
+        return cur[0];
+    }
+}
+
+class FreqStack {
+    Map<Integer,Integer> freq;
+    Map<Integer,Stack<Integer>> map;
+    int max=0;
+    public FreqStack() {
+        freq=new HashMap<>();
+        map=new HashMap<>();
+    }
+    public void push(int x) {
+        int cur=freq.getOrDefault(x,0)+1;
+        freq.put(x,cur);
+        map.putIfAbsent(cur,new Stack<>());
+        map.get(cur).push(x);
+        max=Math.max(max,cur);
+    }
+    public int pop() {
+        Stack<Integer> vals=map.get(max);
+        int res=vals.pop();
+        if(vals.isEmpty()) max--;
+        freq.put(res,freq.getOrDefault(res,1)-1);
+        return res;
+    }
+}

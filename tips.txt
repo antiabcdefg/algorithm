@@ -1,0 +1,14 @@
+List->int[]
+res.stream().mapToInt(i->i).toArray()
+
+List<int[]> -> int[][]
+res.toArray(new int[res.size()][])
+
+int[] -> List
+Arrays.stream(ints).boxed().collect(Collectors.toList())
+
+int[] -> int[]
+Arrays.copyOf(res,idx);
+
+set<int[]> -> string=x+" "+y
+比较的是int[]地址而不是内容

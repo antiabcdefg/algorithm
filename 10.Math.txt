@@ -1,0 +1,959 @@
+GCD与LCM
+O(log(a+b))
+int gcd(int a, int b) {//Euclidean algorithm
+    return b == 0 ? a : gcd(b, a % b);
+}
+int lcm(int a, int b) {
+    return a * b / gcd(a, b);
+}
+
+//求x, y，使得ax + by = gcd(a, b)
+int xGCD(int a, int b, int &x, int &y) {
+    if (!b) {
+        x = 1, y = 0;
+        return a;
+    }
+    int gcd = xGCD(b, a % b, y, x);
+    y -= (a/b) * x;
+    return gcd;
+}
+
+欧拉函数Euler's totient function
+class Solution {
+    public int euler(int x) {
+        int res=x;
+        for(int i=2;i*i<=x;i++){
+            if(x%i==0){
+                res=res/i*(i-1);
+                while(x%i==0) x/=i;
+            }
+        }
+        if(x>1) res=res/x*(x-1);
+        return res;
+    }
+}
+
+筛法求欧拉函数
+
+
+
+质数 Prime Number
+boolean isPrime(int n) {
+    for(int i=2;i*i<=n;i++)
+        if(n%i==0) return false;
+    return true;
+}
+
+204. 计数质数  质数筛Sieve of Eratosthenes  统计所有小于n
+O(nloglogn)
+class Solution {
+    public int countPrimes(int n) {
+        if(n<=2) return 0;
+        boolean[] isPrim=new boolean[n];
+        Arrays.fill(isPrim,true);
+
+        for(int i=2;i*i<n;i++){
+            if(isPrim[i]){
+                for(int j=i*i;j<n;j+=i) isPrim[j]=false;
+            }
+        }
+
+        int cnt=0;
+        for(int i=2;i<n;i++) if(isPrim[i]) cnt++;
+        return cnt;
+    }
+}
+
+分解质因数
+class Solution {
+    private void divide(int x) {
+        for(int i=2;i*i<=x;i++){
+            if(x%i==0){
+                int cnt=0;
+                while(x%i==0){
+                    cnt++;
+                    x/=i;
+                }
+                System.out.println(i+","+cnt);
+            }
+        }
+        if(x>1) System.out.println(x+","+1);
+    }
+}
+
+求所有约数
+class Solution {
+    public List<Integer> get_divisors(int x) {
+        List<Integer> res=new ArrayList<>();
+        for(int i=1;i*i<=x;i++){
+            if(x%i==0){
+                res.add(i);
+                if(x/i!=i) res.add(x/i);
+            }
+        }
+        Collections.sort(res);
+        return res;
+    }
+}
+
+N = p1^c1 * p2^c2 * ... *pk^ck
+约数个数: (c1 + 1) * (c2 + 1) * ... * (ck + 1)
+约数之和: (p1^0 + p1^1 + ... + p1^c1) * ... * (pk^0 + pk^1 + ... + pk^ck)
+
+求组合数
+// 求c[a][b] 表示从a个苹果中选b个的方案数
+for(int i = 0; i < N; i++)
+    for(int j = 0; j <= i; j++)
+        if(j==0) c[i][j] = 1;
+        else c[i][j] = (c[i-1][j] + c[i-1][j-1]) % mod;
+
+
+263. 丑数
+class Solution {
+    public boolean isUgly(int num) {
+        if(num<1) return false;
+        while(num>1){
+            if(num%2==0) num/=2;
+            else if(num%3==0) num/=3;
+            else if(num%5==0) num/=5;
+            else return false;
+        }
+        return num==1;
+    }
+}
+
+264. 丑数 II
+class Solution {
+    public int nthUglyNumber(int n) {
+        Queue<Double> q=new PriorityQueue<>();
+        double res=1.0;
+        for(int i=2;i<=n;i++){
+            if(!q.contains(2*res)) q.offer(2*res);
+            if(!q.contains(3*res)) q.offer(3*res);
+            if(!q.contains(5*res)) q.offer(5*res);
+            res=q.poll();
+        }
+        return (int)res;
+    }
+}
+
+class Solution {
+    public int nthUglyNumber(int n) {
+        int[] nums=new int[1690];
+        nums[0]=1;
+        int p1=0,p2=0,p3=0;
+        for(int i=1;i<n;i++){
+            int min=Math.min(nums[p1]*2,Math.min(nums[p2]*3,nums[p3]*5));
+            nums[i]=min;
+            if(min==nums[p1]*2) p1++;
+            if(min==nums[p2]*3) p2++;
+            if(min==nums[p3]*5) p3++;
+        }
+        return nums[n-1];
+    }
+}
+
+313. 超级丑数
+class Solution {
+    public int nthSuperUglyNumber(int n, int[] primes) {
+        Queue<Long> min=new PriorityQueue<>();
+        long res=1;
+        for(int i=1;i<n;i++){
+            for(int p:primes) min.offer(res*p);
+            res=min.poll();
+            while(!min.isEmpty()&&res==min.peek()) min.poll();
+        }
+        return (int)res;
+    }
+}
+
+1201. 丑数 III
+class Solution {
+    public int nthUglyNumber(int n, int a, int b, int c) {
+        long ab=lcm(a,b),ac=lcm(a,c),bc=lcm(b,c);
+        long abc=lcm(ab,c);
+        long l=Math.min(a,Math.min(b,c)),r=n*l;
+        while(l<r){
+            long m=l+(r-l)/2;
+            long cnt=m/a+m/b+m/c-m/ab-m/ac-m/bc+m/abc;
+            if(cnt<n) l=m+1;
+            else r=m;
+        }
+        return (int)l;
+    }
+    public long gcd(long a,long b){//最大公约数
+        return b==0?(int)a:gcd(b,a%b);
+    }
+    public long lcm(long a,long b){//最小公倍数
+        return (long)a*(long)b/(long)gcd(a,b);
+    }
+}
+
+
+高精度计算
+加法
+class Solution {
+    public int[] add(int[] a,int[] b) {//反转的数
+        List<Integer> res=new ArrayList<>();
+        int sum=0;
+        for(int i=0;i<a.length||i<b.length;i++){
+            if(i<a.length) sum+=a[i];
+            if(i<b.length) sum+=b[i];
+            res.add(sum%10);
+            sum/=10;
+        }
+        if(sum>0) res.add(sum);
+        return res.stream().mapToInt(i->i).toArray();
+    }
+}
+
+减法
+class Solution {
+    public int[] sub(int[] a,int[] b) {
+        List<Integer> res=new ArrayList<>();
+        int sum=0;
+        for(int i=0;i<a.length||i<b.length;i++){
+            if(i<a.length) sum=a[i]-sum;
+            if(i<b.length) sum-=b[i];
+            res.add((sum+10)%10);
+            sum=sum<0?1:0;
+        }
+        while(res.size()>1&&res.get(res.size()-1)==0) res.remove(res.size()-1);
+        return res.stream().mapToInt(i->i).toArray();
+    }
+}
+
+乘法
+class Solution {
+    public int[] mul(int[] a,int b) {
+        List<Integer> res=new ArrayList<>();
+        int cur=0;
+        for(int i=0;i<a.length||cur!=0;i++){
+            if(i<a.length) cur+=a[i]*b;
+            res.add(cur%10);
+            cur/=10;
+        }
+        while(res.size()>1&&res.get(res.size()-1)==0) res.remove(res.size()-1);
+        return res.stream().mapToInt(i->i).toArray();
+    }
+}
+
+除法
+class Solution {
+    public int[] div(int[] a,int b) {
+        List<Integer> res=new ArrayList<>();
+        int r=0;
+        for(int i=a.length-1;i>=0;i--){
+            r=r*10+a[i];
+            res.add(r/b);
+            r%=b;
+        }
+        Collections.reverse(res);
+        while(res.size()>1&&res.get(res.size()-1)==0) res.remove(res.size()-1);
+        return res.stream().mapToInt(i->i).toArray();
+    }
+}
+
+剑指 Offer 17. 打印从1到最大的n位数
+//大数解法 全排列
+class Solution {
+    char[] num;
+    int[] res;
+    int cnt=0;
+    public int[] printNumbers(int n) {
+        num=new char[n];
+        res=new int[(int)(Math.pow(10,n)-1)];
+        backtrack(n,0);
+        return res;
+    }
+    public void backtrack(int n,int idx){
+        if(idx==n){
+            int cur=Integer.parseInt(String.valueOf(num));
+            if(cur!=0) res[cnt++]=cur;
+            return;
+        }
+        for(char c='0';c<='9';c++){
+            num[idx]=c;
+            backtrack(n,idx+1);
+        }
+    }
+}
+
+class Solution {
+    int[] res;
+    int cnt=0;
+    public int[] printNumbers(int n) {
+        res=new int[(int)(Math.pow(10,n)-1)];
+        char[] num=new char[n];
+        Arrays.fill(num,'0');
+        while(dfs(num)){
+            res[cnt++]=Integer.parseInt(String.valueOf(num));
+        }
+        return res;
+    }
+    public boolean dfs(char[] num){
+        for(int i=num.length-1;i>=0;i--){
+            char c=(char)(num[i]+1);
+            if(c>'9'){
+                num[i]='0';
+                if(i==0) return false;
+            }else{
+                num[i]=c;
+                return true;
+            }
+        }
+        return true;
+    }
+}
+
+剑指 Offer 57 - II. 和为s的连续正数序列
+//x+(x+1)+...+(x+m-1)=target => m*x+m*(m-1)= 2*target
+class Solution {
+    public int[][] findContinuousSequence(int target) {
+        List<int[]> res=new ArrayList<>();
+        for(int idx=2;idx<target;idx++){
+            int x=target-idx*(idx-1)/2;
+            if(x<=0) break;
+            if(x%idx==0){
+                int[] cur=new int[idx];
+                for(int i=0,j=x/idx;i<idx;i++,j++) cur[i]=j;
+                res.add(cur);
+            }
+        }
+        Collections.reverse(res);
+        return res.toArray(new int[res.size()][]);
+    }
+}
+
+371. 两整数之和/剑指 Offer 65. 不用加减乘除做加法/面试题 17.01. 不用加号的加法
+class Solution {
+    public int add(int a, int b) {
+        if(b==0) return a;
+        return add(a^b,(a&b)<<1);
+    }
+}
+
+剑指 Offer 64. 求1+2+…+n
+class Solution {
+    public int sumNums(int n) {
+        boolean x=n>1&&(n+=sumNums(n-1))>0;
+        return n;
+    }
+}
+
+FrogJmp
+class Solution {
+    public int solution(int X, int Y, int D) {
+        return ((Y - X) + D - 1)/D;
+    }
+}
+
+CountDiv
+class Solution {
+    public int solution(int A, int B, int K) {
+        return B/K-A/K+(A%K==0?1:0);
+    }
+}
+
+面试题 16.11. 跳水板
+class Solution {
+    public int[] divingBoard(int shorter, int longer, int k) {
+        if(k==0) return new int[0];
+        if(shorter==longer) return new int[]{k*shorter};
+        int[] res=new int[k+1];
+        for(int i=0;i<=k;i++){
+            res[i]=shorter*(k-i)+longer*i;
+        }
+        return res;
+    }
+}
+
+
+
+数字处理
+504. 七进制数
+class Solution {
+    public String convertToBase7(int num) {
+        if(num==0) return "0";
+        boolean is_negative=num<0;
+        if(is_negative) num=-num;
+        String res="";
+        while(num>0){
+            int n=num%7;
+            num/=7;
+            res=(char)(n+'0')+res;
+        }
+        return is_negative?'-'+res:res;
+    }
+}
+
+405. 数字转换为十六进制数
+class Solution {
+    public String toHex(int num) {
+        if(num==0) return "0";
+        char[] map = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
+        StringBuilder sb = new StringBuilder();
+        while(num>0){
+            sb.append(map[num&0b1111]);
+            num>>>=4;
+        }
+        return sb.reverse().toString();
+    }
+}
+
+168. Excel表列名称
+class Solution {
+    public String convertToTitle(int n) {
+        StringBuilder res=new StringBuilder();
+        while(n>0){
+            n--;
+            res.insert(0,(char)(n%26+'A'));
+            n/=26;
+        }
+        return res.toString();
+    }
+}
+
+400. 第N个数字
+//O(logn) O(logn)
+class Solution {
+    public int findNthDigit(int n) {
+        if(n<10) return n;
+        int digit=1;
+        long cnt=9,start=1;
+        while(n>digit*cnt){
+            n-=digit*cnt;
+            digit++;
+            cnt*=10;
+            start*=10;
+        }
+        long num=start+(n-1)/digit;
+        return Long.toString(num).charAt((n-1)%digit)-'0';
+    }
+}
+
+233. 数字 1 的个数
+//https://leetcode-cn.com/problems/number-of-digit-one/solution/shu-xue-fen-xi-ni-ming-bai-liao-yao-by-62e64arp6t/
+class Solution {
+    public int countDigitOne(int n) {
+        if(n<1) return 0;
+        int num=n,res=0;
+        long i=1;
+        while(num>0){
+            if(num%10==0) res+=(num/10)*i;// 修正值是 0
+            else if(num%10==1) res+=(num/10)*i+(n%i)+1;// 修正值是(n % i) + 1
+            else if(num%10>1) res+=(num/10)*i+i;// 修正值是 i
+            num/=10;
+            i*=10;
+        }
+        return res;
+    }
+}
+
+面试题 05.02. 二进制数转字符串
+class Solution {
+    public String printBin(double num) {
+        StringBuilder sb=new StringBuilder();
+        sb.append("0.");
+        while(num!=0){
+            if(sb.length()>=32) return "ERROR";
+            num*=2;
+            sb.append(((int)num)&1);
+            if(num>=1) num-=1;
+        }
+        return sb.toString();
+    }
+}
+
+172. 阶乘后的零
+//尾部的 0 由 2 * 5 得来，2 的数量明显多于 5 的数量，因此只要统计有多少个 5 即可。
+O(logN)
+class Solution {
+    public int trailingZeroes(int n) {
+        return n==0?0:n/5+trailingZeroes(n/5);
+    }
+}
+
+class Solution {
+    public int trailingZeroes(int n) {
+        int res=0;
+        for(int i=n;i/5>0;i/=5) res+=i/5;
+        return res;
+    }
+}
+
+编程之美：2.2 N!的二进制表示中最低位1的位置
+int LowestOne(int N){
+    int res = 0;
+    while(N>0){
+        N >>= 1;    //N缩小为原来的1/2，继续操作
+        res += N;   //N除以2的结果
+    }
+    return res+1;
+}
+
+793. 阶乘函数后K个零
+O((logK)^2)  O(logK)
+class Solution {
+    public int preimageSizeFZF(long K) {
+        if(K==0) return 5;
+        long i=K,j=5*K+1;
+        while(i<j){
+            long m=i+(j-i)/2;
+            long cur=trailingZeroes(m);
+            if(cur==K) return 5;
+            else if(cur<K) i=m+1;
+            else j=m;
+        }
+        return 0;
+    }
+    public long trailingZeroes(long n) {
+        long res=0;
+        for(long d=n;d/5>0;d/=5) res+=d/5;
+        return res;
+    }
+}
+
+415. 字符串相加
+class Solution {
+    public String addStrings(String num1, String num2) {
+        StringBuilder s=new StringBuilder();
+        int carry=0, i=num1.length()-1, j=num2.length()-1;
+        while(i>=0||j>=0||carry!=0){
+            int x=i<0?0:num1.charAt(i--)-'0';
+            int y=j<0?0:num2.charAt(j--)-'0';
+            int r=x+y+carry;
+            s.insert(0,r%10);
+            carry=r/10;
+        }
+        return s.toString();
+    }
+}
+
+2. 两数相加  逆序链表求和
+
+445. 两数相加 II  链表求和
+
+43. 字符串相乘
+class Solution {
+    public String multiply(String num1, String num2) {
+        if(num1.equals("0")||num2.equals("0")) return "0";
+        String res="0";
+        for (int i=num2.length()-1;i>=0;i--){
+            StringBuilder cur=new StringBuilder();
+            for(int j=0;j<num2.length()-1-i;j++) cur.append(0);
+            int y=num2.charAt(i)-'0',carry=0;
+            for(int j=num1.length()-1;j>=0||carry!=0;j--){
+                int x=j<0?0:num1.charAt(j)-'0';
+                int r=x*y+carry;
+                cur.append(r%10);
+                carry=r/10;
+            }
+            res=addStrings(cur.reverse().toString(),res);
+        }
+        return res;
+    }
+    public String addStrings(String num1, String num2) {
+        StringBuilder s=new StringBuilder();
+        int carry=0, i=num1.length()-1, j=num2.length()-1;
+        while(i>=0||j>=0||carry!=0){
+            int x=i<0?0:num1.charAt(i--)-'0';
+            int y=j<0?0:num2.charAt(j--)-'0';
+            int r=x+y+carry;
+            s.append(r%10);
+            carry=r/10;
+        }
+        return s.reverse().toString();
+    }
+}
+
+class Solution {
+    public String multiply(String num1, String num2) {
+        if(num1.equals("0")||num2.equals("0")) return "0";
+        int[] copy=new int[num1.length()+num2.length()];
+        for(int i=num2.length()-1;i>=0;i--) {
+            int y=num2.charAt(i)-'0';
+            for(int j=num1.length()-1;j>=0;j--) {
+                int x=num1.charAt(j)-'0';
+                int r=x*y+copy[i+j+1];
+                copy[i+j+1]=r%10;
+                copy[i+j]+=r/10;
+            }
+        }
+        StringBuilder res=new StringBuilder();
+        for(int i=0;i<copy.length;i++) {
+            if(i==0&&copy[i]==0) continue;
+            res.append(copy[i]);
+        }
+        return res.toString();
+    }
+}
+
+367. 有效的完全平方数
+class Solution {
+    public boolean isPerfectSquare(int num) {
+        int sub=1;
+        while(num>0){
+            num-=sub;
+            sub+=2;
+        }
+        return num==0;
+    }
+}
+
+326. 3的幂
+class Solution {
+    public boolean isPowerOfThree(int n) {
+        if(n==0) return false;
+        while(n%3==0) n/=3;
+        return n==1;
+    }
+}
+
+class Solution {
+    public boolean isPowerOfThree(int n) {
+        double res=Math.log10(n)/Math.log10(3);
+        return Math.abs(Math.round(res)-res)<1e-10;
+    }
+}
+
+class Solution {
+    public boolean isPowerOfThree(int n) {
+        return n>0&&1162261467%n==0;
+    }
+}
+
+class Solution {
+    public boolean isPowerOfThree(int n) {
+        return Integer.toString(n,3).matches("^10*$");
+    }
+}
+
+238. 除自身以外数组的乘积
+class Solution {
+    public int[] productExceptSelf(int[] nums) {
+        int n=nums.length;
+        int[] res=new int[n];
+        Arrays.fill(res,1);
+        int l=1,r=1;
+        for(int i=0,j=n-1;i<n&&j>=0;i++,j--){
+            res[i]*=l;
+            res[j]*=r;
+            l*=nums[i];
+            r*=nums[j];
+        }
+        return res;
+    }
+}
+
+628. 三个数的最大乘积
+class Solution {
+    public int maximumProduct(int[] nums) {
+        int min1=Integer.MAX_VALUE, min2=Integer.MAX_VALUE;
+        int max1=Integer.MIN_VALUE, max2=Integer.MIN_VALUE, max3=Integer.MIN_VALUE;
+        for(int num:nums){
+            if(num>max1){
+                max3=max2;
+                max2=max1;
+                max1=num;
+            }else if(num>max2){
+                max3=max2;
+                max2=num;
+            }else if(num>max3){
+                max3=num;
+            }
+
+            if(num<min1){
+                min2=min1;
+                min1=num;
+            }else if(num<min2){
+                min2=num;
+            }
+        }
+        return Math.max(max1*min1*min2,max1*max2*max3);
+    }
+}
+
+453. 最小移动次数使数组元素相等
+//每次选择N-1个数+1 = 所有数字+1, 然后挑一个数字-1 = 随机挑一个数字-1 = 把所有数字变成最小数的次数, 就是让所有数字相等的次数
+class Solution {
+    public int minMoves(int[] nums) {
+        Arrays.sort(nums);
+        int sum=0;
+        for(int i=0,n=nums.length;i<n;i++) sum+=nums[i]-nums[0];
+        return sum;
+    }
+}
+
+class Solution {
+    public int minMoves(int[] nums) {
+        int sum=0,min=Integer.MAX_VALUE;
+        for(int i:nums) min=Math.min(min,i);
+        for(int i:nums) sum+=i-min;
+        return sum;
+    }
+}
+
+462. 最少移动次数使数组元素相等 II
+class Solution {
+    public int minMoves2(int[] nums) {
+        Arrays.sort(nums);
+        int sum=0;
+        for(int num:nums) sum+=Math.abs(nums[nums.length/2]-num);
+        return sum;
+    }
+}
+
+class Solution {
+    public int minMoves2(int[] nums) {
+        Arrays.sort(nums);
+        int sum=0;
+        for(int i=0,j=nums.length-1;i<j;i++,j--) sum+=nums[j]-nums[i];
+        return sum;
+    }
+}
+
+Boyer-Moore 投票算法
+出现次数大于长度1/2的值只能有一个
+出现次数大于长度1/3的值最多两个
+
+169. 多数元素
+class Solution {
+    public int majorityElement(int[] nums) {
+        int cnt=0,candidate=0;
+        for(int i:nums){
+            if(cnt==0) candidate=i;
+            if(i==candidate) cnt++;
+            else cnt--;
+        }
+        return candidate;
+    }
+}
+
+class Solution {
+    public int majorityElement(int[] nums) {
+        Arrays.sort(nums);
+        return nums[nums.length/2];
+    }
+}
+
+229. 求众数 II
+class Solution {
+    public List<Integer> majorityElement(int[] nums) {
+        List<Integer> res=new ArrayList<>();
+        if(nums==null||nums.length==0) return res;
+        int cnt1=0,cnt2=0,candi1=0,candi2=0;
+        for(int i:nums){
+            if(candi1==i) cnt1++;
+            else if(candi2==i) cnt2++;
+            else if(cnt1==0){
+                candi1=i;
+                cnt1++;
+            }
+            else if(cnt2==0){
+                candi2=i;
+                cnt2++;
+            }
+            else{
+                cnt1--;
+                cnt2--;
+            }
+        }
+        cnt1=0;cnt2=0;
+        for(int i:nums){
+            if(i==candi1) cnt1++;
+            else if(i==candi2) cnt2++;
+        }
+        if(cnt1>nums.length/3) res.add(candi1);
+        if(cnt2>nums.length/3) res.add(candi2);
+        return res;
+    }
+}
+
+随机与取样
+470. 用 Rand7() 实现 Rand10()
+class Solution extends SolBase {
+    public int rand10() {
+        int r=(rand7()-1)*7+rand7();
+        if(r>40) return rand10();
+        return (r-1)%10+1;
+    }
+}
+
+//设计
+380. 常数时间插入、删除和获取随机元素
+//O(1)
+class RandomizedSet {
+    List<Integer> list;
+    Map<Integer,Integer> map;
+    public RandomizedSet() {
+        list=new ArrayList<>();
+        map=new HashMap<>();
+    }
+    public boolean insert(int val) {
+        if(map.containsKey(val)) return false;
+
+        map.put(val,list.size());
+        list.add(val);
+        return true;
+    }
+    public boolean remove(int val) {
+        if(!map.containsKey(val)) return false;
+
+        int size=map.get(val);
+        map.put(list.get(list.size()-1),size);
+        map.remove(val);
+        list.set(size,list.get(list.size()-1));
+        list.remove(list.size()-1);
+        return true;
+    }
+    public int getRandom() {
+        return list.get(new Random().nextInt(list.size()));
+    }
+}
+
+710. 黑名单中的随机数
+class Solution {
+    int n;
+    Map<Integer,Integer> map;
+    public Solution(int N, int[] blacklist) {
+        n=N-blacklist.length;
+        map=new HashMap<>();
+
+        for(int b:blacklist) map.put(b,0);
+        int last=N-1;
+        for(int b:blacklist){
+            if(b>=n) continue;
+            while(map.containsKey(last)) last--;
+            map.put(b,last--);
+        }
+    }
+
+    public int pick() {
+        int idx=new Random().nextInt(n);
+        return map.containsKey(idx)?map.get(idx):idx;
+    }
+}
+
+class Solution {
+    int n;
+    int[] b;
+    public Solution(int N, int[] blacklist) {
+        n=N-blacklist.length;
+        Arrays.sort(blacklist);
+        b=blacklist;
+    }
+
+    public int pick() {
+        int k=new Random().nextInt(n);
+        int l=0,r=b.length-1;
+        while(l<r){
+            int m=l+(r-l+1)/2;
+            int cnt=b[m]-m;
+            if(cnt>k) r=m-1;
+            else l=m;
+        }
+        return l==r&&b[l]-l<=k?l+k+1:k;
+    }
+}
+
+//https://zhuanlan.zhihu.com/p/107786175
+384. 打乱数组  Fisher-Yates洗牌算法
+class Solution {
+    private int[] ori;
+    public Solution(int[] nums) {
+        ori=Arrays.copyOf(nums,nums.length);
+    }
+    public int[] reset() {
+        return ori;
+    }
+    public int[] shuffle() {
+        if(ori.length==0) return new int[]{};
+        int[] copy=Arrays.copyOf(ori,ori.length);
+        //反向洗牌  [0,i]
+        for(int i=ori.length-1;i>=0;i--) swap(copy,i,new Random().nextInt(i+1));
+        //正向洗牌  [i,n)
+        for(int i=0;i<ori.length;i++) swap(copy,i,i+new Random().nextInt(ori.length-i));
+        return copy;
+    }
+    public void swap(int[] nums,int i,int j){
+        int temp=nums[i];
+        nums[i]=nums[j];
+        nums[j]=temp;
+    }
+}
+
+//https://zhuanlan.zhihu.com/p/107793995
+水库采样: 当你遇到第i个元素时, 应该有1/i的概率选择该元素, 1-1/i的概率保持原有的选择。
+
+382. 链表随机节点
+class Solution {
+    ListNode head;
+    public Solution(ListNode head) {
+        this.head=head;
+    }
+    public int getRandom() {
+        int res=head.val;
+        ListNode p=head.next;
+        for(int i=2;p!=null;i++){
+            if(new Random().nextInt(i)==0) res=p.val;//生成一个[0,i)之间的整数,这个整数等于0概率是1/i
+            p=p.next;
+        }
+        return res;
+    }
+}
+
+选择k个
+class Solution {
+    public int[] getRandom(ListNode head, int k) {
+        int[] res=new int[k];
+        ListNode p=head;
+        for(int i=0;i<k&&p!null;i++){
+            res[i]=p.val;
+            p=p.next;
+        }
+        for(int j=k+1;p!=null;j++){
+            if(new Random().nextInt(j)<k) res[j]=p.val;//生成一个[0,j)之间的整数,这个整数小于k概率是k/j
+            p=p.next;
+        }
+        return res;
+    }
+}
+
+398. 随机数索引
+class Solution {
+    private int[] ori;
+    public Solution(int[] nums) {
+        ori=nums;
+    }
+    public int pick(int target) {
+        int idx=0,cnt=0;
+        for(int i=0;i<ori.length;i++){
+            if(ori[i]==target)
+                if(new Random().nextInt(++cnt)==0) idx=i;//选择1/n   //nextInt()%(++n)
+        }
+        return idx;
+    }
+}
+
+528. 按权重随机选择
+//O(n) O(n)
+class Solution {
+    int[] list;
+    public Solution(int[] w) {
+        list=w;
+        for(int i=1;i<w.length;i++) list[i]+=list[i-1];
+    }
+    public int pickIndex() {
+        int l=0,r=list.length-1;
+        int target=new Random().nextInt(list[r])+1;
+        while(l<r){
+            int m=l+((r-l)>>1);
+            if(list[m]<target) l=m+1;
+            else r=m;
+        }
+        return list[l]>=target?l:0;//归上界
+    }
+}
+
+

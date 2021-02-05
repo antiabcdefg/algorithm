@@ -1,0 +1,613 @@
+可以保持取出数字在原数组中的相对顺序
+找出每个数左边离它最近的比它大/小的数
+
+
+27. 移除元素
+//O(n) O(1)
+class Solution {
+    public int removeElement(int[] nums, int val) {
+        int idx=0,n=nums.length;
+        for(int i=0;i<n;i++){
+            if(nums[i]!=val) nums[idx++]=nums[i];
+        }
+        return idx;
+    }
+}
+
+class Solution {
+    public int removeElement(int[] nums, int val) {
+        int i=0,n=nums.length;
+        while(i<n){
+            if(nums[i]==val) nums[i]=nums[n-- -1];
+            else i++;
+        }
+        return n;
+    }
+}
+
+283. 移动零 数组中的 0 移到末尾
+class Solution {
+    public void moveZeroes(int[] nums) {
+        int i=0;
+        for(int n:nums){
+            if(n!=0) nums[i++]=n;
+        }
+        while(i<nums.length) nums[i++]=0;
+    }
+}
+
+class Solution {
+    public void moveZeroes(int[] nums) {
+        int n=nums.length;
+        for(int i=0,j=0;j<n;j++){
+            if(nums[j]!=0) swap(nums,i++,j);
+        }
+    }
+    public void swap(int[] nums,int i,int j){
+        int temp=nums[i];
+        nums[i]=nums[j];
+        nums[j]=temp;
+    }
+}
+
+26. 删除排序数组中的重复项
+//O(n) O(1)
+class Solution {
+    public int removeDuplicates(int[] nums) {
+        int n=nums.length;
+        if(n==0) return 0;
+        int idx=0;
+        for(int i=0;i<n;i++){
+            if(nums[i]!=nums[idx]) nums[++idx]=nums[i];
+        }
+        return idx+1;
+    }
+}
+
+83. 删除排序链表中的重复元素
+ListNode deleteDuplicates(ListNode head) {
+    if (head == null) return null;
+    ListNode slow = head, fast = head.next;
+    while (fast != null) {
+        if (fast.val != slow.val) {
+            slow.next = fast;
+            slow = slow.next;
+        }
+        fast = fast.next;
+    }
+    // 断开与后面重复元素的连接
+    slow.next = null;
+    return head;
+}
+
+316. 去除重复字母/1081. 不同字符的最小子序列
+//O(n) O(n)
+class Solution {
+    public String removeDuplicateLetters(String s) {
+        Stack<Character> stk=new Stack<>();
+        boolean[] inStack = new boolean[256];
+        int[] cnt=new int[256];
+        for(int i=0;i<s.length();i++){
+            cnt[s.charAt(i)]++;
+        }
+
+        for(char c:s.toCharArray()){
+            cnt[c]--;
+            if(inStack[c]) continue;
+            while(!stk.isEmpty()&&stk.peek()>c&&cnt[stk.peek()]>0){
+                inStack[stk.pop()]=false;
+            }
+            stk.push(c);
+            inStack[c]=true;
+        }
+
+        StringBuilder sb=new StringBuilder();
+        while(!stk.isEmpty()){
+            sb.append(stk.pop());
+        }
+        return sb.reverse().toString();
+    }
+}
+
+class Solution {
+    public String removeDuplicateLetters(String s) {
+        int n=s.length();
+        int[] in=new int[26];
+        int[] count=new int[26];
+        for(int i=0;i<n;i++) count[s.charAt(i)-'a']++;
+
+        StringBuilder res=new StringBuilder();
+        for(int i=0;i<n;i++){
+            count[s.charAt(i)-'a']--;
+            if(in[s.charAt(i)-'a']==1) continue;
+            while(res.length()>0&&(s.charAt(i)<res.charAt(res.length()-1))&&count[res.charAt(res.length()-1)-'a']>0){
+                in[res.charAt(res.length()-1)-'a']=0;
+                res.deleteCharAt(res.length()-1);
+            }
+            res.append(s.charAt(i));
+            in[s.charAt(i)-'a']=1;
+        }
+        return res.toString();
+    }
+}
+
+402. 移掉K位数字
+class Solution {
+    public String removeKdigits(String num, int k) {
+        if(num.length()==k) return "0";
+        Stack<Character> stk=new Stack<>();
+        for(char c:num.toCharArray()){
+            while(!stk.isEmpty()&&c<stk.peek()&&k-->0) stk.pop();
+            if(!(stk.isEmpty()&&c=='0')) stk.push(c);
+        }
+        while(k-->0) stk.pop();
+
+        StringBuilder sb=new StringBuilder();
+        while(!stk.isEmpty()){
+            sb.insert(0,stk.pop());
+        }
+        return sb.length()==0?"0":sb.toString();
+    }
+}
+
+双栈排序
+class Solution {
+    public List<Integer> twoStacksSort(int[] nums) {
+        List<Integer> res=new ArrayList<>();
+        Stack<Integer> stk=new Stack<>();
+        for(int i:nums) stk.push(i);
+
+        Stack<Integer> help=new Stack<>();
+        while(!stk.isEmpty()) {
+            int cur=stk.pop();
+            while(!help.isEmpty()&&help.peek()<cur) {
+                stk.push(help.pop());
+            }
+            help.push(cur);
+        }
+        while(!help.isEmpty()) res.add(help.pop());
+        return res;
+    }
+}
+
+739. 每日温度   数组中元素与下一个比它大的元素之间的距离
+class Solution {
+    public int[] dailyTemperatures(int[] T) {
+        int n=T.length;
+        int[] res=new int[n];
+        Stack<Integer> stk=new Stack<>();
+        for(int i=n-1;i>=0;i--){
+            while(!stk.isEmpty()&&T[i]>=T[stk.peek()]) stk.pop();
+            res[i]=stk.isEmpty()?0:stk.peek()-i;
+            stk.push(i);
+        }
+        return res;
+    }
+}
+
+496. 下一个更大元素 I
+//O(n) O(n)
+class Solution {
+    public int[] nextGreaterElement(int[] nums1, int[] nums2) {
+        Stack<Integer> stk=new Stack<>();
+        Map<Integer,Integer> map=new HashMap<>();
+        for(int i=nums2.length-1;i>=0;i--){
+            while(!stk.isEmpty()&&stk.peek()<=nums2[i]) stk.pop();
+            map.put(nums2[i],stk.isEmpty()?-1:stk.peek());
+            stk.push(nums2[i]);
+        }
+
+        int[] res=new int[nums1.length];
+        for(int i=0;i<nums1.length;i++) res[i]=map.get(nums1[i]);
+        return res;
+    }
+}
+
+1118. 一月有多少天
+class Solution {
+    public int[] dailyTemperatures(int[] nums) {
+        int n=nums.length;
+        Stack<Integer> stk=new Stack<>();
+        int[] res=new int[n];
+        for(int i=n-1;i>=0;i--){
+            while(!stk.isEmpty()&&nums[i]>=nums[stk.peek()]) stk.pop();
+            res[i]=stk.isEmpty()?0:stk.peek()-i;
+            stk.push(i);
+        }
+        return res;
+    }
+}
+
+503. 下一个更大元素 II  //循环数组
+class Solution {
+    public int[] nextGreaterElements(int[] nums) {
+        Stack<Integer> stk=new Stack<>();
+        int n=nums.length;
+        int[] res=new int[n];
+        for(int i=n*2-1;i>=0;i--){
+            while(!stk.isEmpty()&&nums[i%n]>=stk.peek()) stk.pop();
+            res[i%n]=stk.isEmpty()?-1:stk.peek();
+            stk.push(nums[i%n]);
+        }
+        return res;
+    }
+}
+
+901. 股票价格跨度
+class StockSpanner {
+    Deque<Integer> stk;
+    List<Integer> stockHis;
+    public StockSpanner() {
+        stk=new ArrayDeque<>();
+        stockHis=new ArrayList<>();
+    }
+    public int next(int price) {
+        stockHis.add(price);
+        while(!stk.isEmpty()&&price>=stockHis.get(stk.peek())) stk.pop();
+        int res=stk.isEmpty()?stockHis.size():stockHis.size()-1-stk.peek();
+        stk.push(stockHis.size()-1);
+        return res;
+    }
+}
+
+907. 子数组的最小值之和
+//找到数组中的每一个数作为最小值的范围
+class Solution {
+    public int sumSubarrayMins(int[] arr) {
+        int mod=(int)(1e9+7);
+        int[] copy=new int[arr.length+1];
+        copy=Arrays.copyOf(arr,arr.length+1);
+        Stack<Integer> stk=new Stack<>();
+        long res=0;
+        for(int i=0;i<copy.length;i++){
+            while(!stk.isEmpty()&&copy[stk.peek()]>=copy[i]){
+                int idx=stk.pop();
+                int pre=-1;
+                if(!stk.isEmpty()) pre=stk.peek();
+                int pre_cnt=idx-pre-1,next_cnt=i-idx-1;
+                res=(res+(long)(copy[idx])*(pre_cnt+1)*(next_cnt+1)%mod)%mod;
+            }
+            stk.push(i);
+        }
+        return (int)res;
+    }
+}
+
+735. 行星碰撞
+class Solution {
+    public int[] asteroidCollision(int[] asteroids) {
+        if(asteroids==null||asteroids.length==0) return null;
+        Stack<Integer> stk=new Stack<>();
+        int i=0;
+        while(i<asteroids.length){
+            if(!stk.isEmpty()&&asteroids[i]<0&&stk.peek()>0){
+                if(stk.peek()<-asteroids[i]){
+                    stk.pop();
+                }else if(stk.peek()==-asteroids[i]){
+                    stk.pop();
+                    i++;
+                }else i++;
+            }
+            else stk.push(asteroids[i++]);
+        }
+        int[] res=new int[stk.size()];
+        for(int z=stk.size()-1;z>=0;z--)
+            res[z]=stk.pop();
+        return res;
+    }
+}
+
+class Solution {
+    public int[] asteroidCollision(int[] asteroids) {
+        if(asteroids==null||asteroids.length==0) return null;
+        int end=0;
+        for(int i=1;i<asteroids.length;i++){
+            end++;
+            asteroids[end]=asteroids[i];
+
+            while(end>0&&asteroids[end]<0&&asteroids[end-1]>0){
+                if(asteroids[end-1]<-asteroids[end]){
+                    asteroids[end-1]=asteroids[end];
+                }else if(asteroids[end-1]==-asteroids[end]){
+                    end--;
+                }
+                end--;
+            }
+        }
+        return Arrays.copyOf(asteroids,end+1);
+    }
+}
+
+321. 拼接最大数   单调栈加合并排序
+class Solution {
+    public int[] maxNumber(int[] nums1, int[] nums2, int k) {
+        int[] res=new int[k];
+        if(nums1.length+nums2.length<k) return res;
+        for(int i=Math.max(0,k-nums2.length);i<=Math.min(k,nums1.length);i++){
+            int[] cur=merge(pickMax(nums1,i),pickMax(nums2,k-i));
+            if(isBigger(cur,res)) res=cur;
+        }
+        return res;
+    }
+    public int[] pickMax(int[] nums, int k){
+        Stack<Integer> stk=new Stack<>();
+        int drop=nums.length-k;
+        for(int i:nums){
+            while(!stk.isEmpty()&&i>stk.peek()&&drop-->0) stk.pop();
+            stk.push(i);
+        }
+        while(drop-->0) stk.pop();
+
+        int[] res=new int[stk.size()];
+        for(int i=0;i<stk.size();i++) res[i]=stk.get(i);
+        return res;
+    }
+    public int[] merge(int[] nums1, int[] nums2){
+        int l1=nums1.length,l2=nums2.length;
+        int p=0,i=0,j=0;
+        if(l1==0) return nums2;
+        if(l2==0) return nums1;
+        int[] res=new int[l1+l2];
+
+        while(i<l1&&j<l2) res[p++]=deepCompare(nums1,nums2,i,j)?nums1[i++]:nums2[j++];
+        while(i<l1) res[p++]=nums1[i++];
+        while(j<l2) res[p++]=nums2[j++];
+        return res;
+    }
+    public boolean deepCompare(int[] nums1, int[] nums2, int i, int j){
+        while(i<nums1.length&&j<nums2.length) {
+            if(nums1[i]==nums2[j]){
+                i++;
+                j++;
+                continue;
+            }
+            return nums1[i]>nums2[j];
+        }
+        return i<nums1.length;
+    }
+    public boolean isBigger(int[] list, int[] res){
+        if(res.length==0) return true;
+        for(int i=0;i<list.length;i++){
+            if(list[i]>res[i]) return true;
+            else if(list[i]<res[i]) return false;
+        }
+        return false;
+    }
+}
+
+
+
+
+柱状图
+
+11. 盛最多水的容器
+//O(n) O(1)
+class Solution {
+    public int maxArea(int[] height) {
+        int res=0,l=0,r=height.length-1;
+        while(l<r){
+            if(height[l]<height[r]){
+                res=Math.max(res,(r-l)*height[l]);
+                l++;
+            }else{
+                res=Math.max(res,(r-l)*height[r]);
+                r--;
+            }
+        }
+        return res;
+    }
+}
+
+42. 接雨水/面试题 17.21. 直方图的水量
+//O(n) O(n)
+class Solution {
+    public int trap(int[] height) {
+        if(height.length==0) return 0;
+        int res=0,n=height.length;;
+        int[] l_max=new int[n];
+        int[] r_max=new int[n];
+        l_max[0]=height[0];
+        r_max[n-1]=height[n-1];
+
+        for(int i=1;i<n;i++) l_max[i]=Math.max(l_max[i-1],height[i]);
+        for(int i=n-2;i>=0;i--) r_max[i]=Math.max(r_max[i+1],height[i]);
+
+        for(int i=1;i<n-1;i++) res+=Math.min(l_max[i],r_max[i])-height[i];
+        return res;
+    }
+}
+
+//O(n) O(1)
+class Solution {
+    public int trap(int[] height) {
+        if(height.length==0) return 0;
+        int res=0,l=0,r=height.length-1;
+        int l_max=0,r_max=0;
+        while(l<r){
+            l_max=Math.max(l_max,height[l]);
+            r_max=Math.max(r_max,height[r]);
+            if(l_max<=r_max) res+=l_max-height[l++];
+            else res+=r_max-height[r--];
+        }
+        return res;
+    }
+}
+
+//虽然 while 循环里套了一个 while 循环，但是考虑到每个元素最多访问两次，入栈一次和出栈一次，所以时间复杂度是 O(n)
+class Solution {
+    public int trap(int[] height) {
+        if(height.length==0) return 0;
+        int res=0;
+        Stack<Integer> stk=new Stack<>();
+        for(int i=0;i<height.length;i++){
+            while(!stk.empty()&&height[i]>height[stk.peek()]){
+                int bottom=stk.pop();
+                while(!stk.isEmpty()&&height[stk.peek()]==height[bottom]) stk.pop();
+                if(stk.isEmpty()) break;
+                int top=stk.peek();
+                int h=Math.min(height[top],height[i])-height[bottom];
+                int distance=i-1-top;
+                res+=h*distance;
+            }
+            stk.push(i);
+        }
+        return res;
+    }
+}
+
+84. 柱状图中最大的矩形
+class Solution {
+    public int largestRectangleArea(int[] heights) {
+        if(heights.length==0) return 0;
+        int res=0;
+        for(int i=0;i<heights.length;i++){
+            int l=i-1;
+            while(l>=0&&heights[l]>=heights[i]) l--;
+
+            int r=i+1;
+            while(r<heights.length&&heights[r]>=heights[i]) r++;
+
+            res=Math.max(res,(r-l-1)*heights[i]);
+        }
+        return res;
+    }
+}
+
+class Solution {
+    public int largestRectangleArea(int[] heights) {
+        int[] copy=new int[heights.length+2];
+        System.arraycopy(heights,0,copy,1,heights.length);
+        int res=0;
+        Stack<Integer> stk=new Stack<>();
+        for(int i=0;i<copy.length;i++){
+            while(!stk.isEmpty()&&copy[i]<copy[stk.peek()]){
+                int cur=stk.pop();
+                res=Math.max(res,copy[cur]*(i-stk.peek()-1));
+            }
+            stk.push(i);
+        }
+        return res;
+    }
+}
+
+//dp
+85. 最大矩形
+class Solution {
+    public int maximalRectangle(char[][] matrix) {
+        if(matrix.length==0||matrix[0].length==0) return 0;
+        int res=0;
+        int[] heights=new int[matrix[0].length];
+        for(int i=0;i<matrix.length;i++){
+            for(int j=0;j<matrix[0].length;j++){
+                if(matrix[i][j]=='1') heights[j]+=1;
+                else heights[j]=0;
+            }
+            res=Math.max(res,largestRectangleArea(heights));
+        }
+        return res;
+    }
+    public int largestRectangleArea(int[] heights) {
+        int[] copy=new int[heights.length+2];
+        System.arraycopy(heights,0,copy,1,heights.length);
+        int res=0;
+        Stack<Integer> stk=new Stack<>();
+        for(int i=0;i<copy.length;i++){
+            while(!stk.isEmpty()&&copy[i]<copy[stk.peek()]){
+                int cur=stk.pop();
+                res=Math.max(res,copy[cur]*(i-stk.peek()-1));
+            }
+            stk.push(i);
+        }
+        return res;
+    }
+}
+
+//dp
+221. 最大正方形
+class Solution {
+    public int maximalSquare(char[][] matrix) {
+        if(matrix.length==0||matrix[0].length==0) return 0;
+        int res=0;
+        int[] heights=new int[matrix[0].length];
+        for(int i=0;i<matrix.length;i++){
+            for(int j=0;j<matrix[0].length;j++){
+                if(matrix[i][j]=='1') heights[j]+=1;
+                else heights[j]=0;
+            }
+            res=Math.max(res,largeArea(heights));
+        }
+        return res;
+    }
+    public int largeArea(int[] heights) {
+        int[] copy=new int[heights.length+2];
+        System.arraycopy(heights,0,copy,1,heights.length);
+        int res=0;
+        Stack<Integer> stk=new Stack<>();
+        for(int i=0;i<copy.length;i++){
+            while(!stk.isEmpty()&&copy[i]<copy[stk.peek()]){
+                int cur=stk.pop();
+                int min=Math.min(copy[cur],(i-stk.peek()-1));
+                res=Math.max(res,min*min);
+            }
+            stk.push(i);
+        }
+        return res;
+    }
+}
+
+class Solution {
+    public int maximalSquare(char[][] matrix) {
+        int res=0;
+        for(int i=0;i<matrix.length;i++){
+            char[] base=matrix[i].clone();
+            if(res<1) res=Math.min(check(base),1);
+            for(int j=i+1;j<matrix.length;j++){
+                char[] next=matrix[j];
+                for(int k=0;k<base.length;k++) base[k]&=next[k];
+                if(check(base)<j-i+1) break;
+                res=Math.max(res,j-i+1);
+            }
+        }
+        return res*res;
+    }
+    public int check(char[] num){
+        int cnt=0,res=0;
+        for(char c:num){
+            if(c=='1') cnt++;
+            else{
+                res=Math.max(res,cnt);
+                cnt=0;
+            }
+        }
+        return Math.max(res,cnt);
+    }
+}
+
+1277. 统计全为 1 的正方形子矩阵
+class Solution {
+    int res=0;
+    public int countSquares(int[][] matrix) {
+        for(int i=0;i<matrix.length;i++){
+            int[] base=matrix[i].clone();
+            check(base,1);
+            for(int j=i+1;j<matrix.length;j++){
+                int[] next=matrix[j];
+                for(int k=0;k<base.length;k++) base[k]&=next[k];
+                if(!check(base,j-i+1)) break;
+            }
+        }
+        return res;
+    }
+    public boolean check(int[] num,int lim){
+        int cnt=0;
+        boolean f=false;
+        for(int c:num){
+            if(c==0) cnt=0;
+            else if(++cnt>=lim){
+                res++;
+                f=true;
+            }
+        }
+        return f;
+    }
+}

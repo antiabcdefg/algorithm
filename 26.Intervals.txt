@@ -1,0 +1,203 @@
+//贪心算法
+435. 无重叠区间
+class Solution {
+    public int eraseOverlapIntervals(int[][] intervals) {
+        if(intervals.length==0) return 0;
+        //Arrays.sort(intervals, Comparator.comparingInt(o->o[1]));
+        Arrays.sort(intervals, (a,b)->(a[1]-b[1]));
+        int res=0,prev=intervals[0][1];
+        for(int i=1;i<intervals.length;i++){
+            if(intervals[i][0]<prev) res++;
+            else prev=intervals[i][1];
+        }
+        return res;
+    }
+}
+
+452. 用最少数量的箭引爆气球
+class Solution {
+    public int findMinArrowShots(int[][] points) {
+        if(points.length==0) return 0;
+        Arrays.sort(points, (a,b)->(a[1]-b[1]));
+        int res=1,prev=points[0][1];//使用当前这只箭能引爆气球的最远距离
+        for(int i=1;i<points.length;i++){
+            if(points[i][0]>prev){
+                res++;
+                prev=points[i][1];
+            }
+        }
+        return res;
+    }
+}
+
+1288. 删除被覆盖区间
+class Solution {
+    public int removeCoveredIntervals(int[][] intervals) {
+        Arrays.sort(intervals,(a,b)->(a[0]==b[0]?b[1]-a[1]:a[0]-b[0]));
+        int cnt=0,prev=intervals[0][1];
+        for(int i=1;i<intervals.length;i++){
+            if(intervals[i][1]<=prev) cnt++;
+            else prev=intervals[i][1];
+        }
+        return intervals.length-cnt;
+    }
+}
+
+56. 合并区间
+O(nlogn) O(logn)
+class Solution {
+    public int[][] merge(int[][] intervals) {
+        if(intervals.length==0) return new int[][]{};
+        Arrays.sort(intervals,(a,b)->a[0]-b[0]);
+        List<int[]> res=new ArrayList<>();
+        res.add(intervals[0]);
+        for(int i=1;i<intervals.length;i++){
+            int[] prev=res.get(res.size()-1);
+            if(intervals[i][0]<=prev[1]) prev[1]=Math.max(intervals[i][1],prev[1]);
+            else res.add(intervals[i]);
+        }
+        return res.toArray(new int[res.size()][2]);
+    }
+}
+
+class Solution {
+    public int[][] merge(int[][] intervals) {
+        Arrays.sort(intervals,(a,b)->a[0]-b[0]);
+        int[][] res = new int[intervals.length][2];
+        int idx=-1;
+        for(int[] i:intervals){
+            if(idx==-1||i[0]>res[idx][1]) res[++idx]=i;
+            else res[idx][1]=Math.max(i[1],res[idx][1]);
+        }
+        return Arrays.copyOf(res,idx+1);
+    }
+}
+
+986. 区间列表的交集
+class Solution {
+    public int[][] intervalIntersection(int[][] A, int[][] B) {
+        List<int []> res=new ArrayList<>();
+        for(int i=0,j=0;i<A.length&&j<B.length;){
+            if(A[i][1]>=B[j][0]&&A[i][0]<=B[j][1]) res.add(new int[]{Math.max(A[i][0],B[j][0]),Math.min(A[i][1],B[j][1])});
+            if(A[i][1]>B[j][1]) j++;
+            else i++;
+        }
+        return res.toArray(new int[res.size()][2]);
+    }
+}
+
+836. 矩形重叠
+class Solution {
+    public boolean isRectangleOverlap(int[] rec1, int[] rec2) {
+        return !(rec1[0] >= rec2[2]
+            || rec1[2] <= rec2[0]
+            || rec1[1] >= rec2[3]
+            || rec1[3] <= rec2[1]
+            || rec1[0] == rec1[2]
+            || rec1[1] == rec1[3]
+            || rec2[0] == rec2[2]
+            || rec2[1] == rec2[3]
+        );
+    }
+}
+
+class Solution {
+    public boolean isRectangleOverlap(int[] rec1, int[] rec2) {
+        return (Math.max(rec1[0],rec2[0])<Math.min(rec1[2],rec2[2]))&&(Math.max(rec1[1],rec2[1])<Math.min(rec1[3],rec2[3]));
+    }
+}
+
+252. Meeting Rooms 会议室
+class Solution {
+    public boolean canAttendMeetings(int[][] intervals) {
+        Arrays.sort(intervals,(a,b)->a[0]-b[0]);
+        for(int i=1;i<intervals.length;i++){
+            if(intervals[i-1][1]>intervals[i][0]) return false;
+        }
+        return true;
+    }
+}
+
+class Solution {
+    public boolean canAttendMeetings(int[][] intervals) {
+        for (int i = 0; i < intervals.length; i++) {
+            for (int j = i + 1; j < intervals.length; j++) {
+                if ((intervals[i][0] >= intervals[j][0] && intervals[i][0] < intervals[j][1])||
+                (intervals[j][0] >= intervals[i][0] && intervals[j][0] < intervals[i][1])) return false;
+            }
+        }
+        return true;
+    }
+}
+
+253. Meeting Rooms II 会议室之二
+class Solution {
+    public int minMeetingRooms(int[][] intervals) {
+        Arrays.sort(intervals,(a,b)->a[0]-b[0]);
+        PriorityQueue<Integer> minHeap=new PriorityQueue<>(intervals.length,(a,b)->a-b);
+        for(int[] i:intervals){
+            if(!minHeap.isEmpty()&&minHeap.peek()<i[0]) minHeap.poll();
+            minHeap.offer(i[1]);
+        }
+        return minHeap.size();
+    }
+}
+
+class Solution {
+    public int minMeetingRooms(int[][] intervals) {
+        Map<Integer,Integer> map=new TreeMap<>();
+        for(int[] i:intervals){
+            map.put(i[0],map.getOrDefault(i[0],0)+1);
+            map.put(i[1],map.getOrDefault(i[1],0)-1);
+        }
+        int room=0,res=0;
+        for(Map.Entry<Integer,Integer> m:map.entrySet()){
+            res=Math.max(res,room+=m.getValue());
+        }
+        return res;
+    }
+}
+
+class Solution {
+    public int minMeetingRooms(int[][] intervals) {
+        int[] starts=new int[intervals.length];
+        int[] ends=new int[intervals.length];
+        for(int i=intervals.length-1;i>=0;i--){
+            starts[i]=intervals[i][0];
+            ends[i]=intervals[i][1];
+        }
+        Arrays.sort(starts);
+        Arrays.sort(ends);
+        int end=0,res=0;
+        for(int i=0;i<intervals.length;i++){
+            if(starts[i]<ends[end]) res++;
+            else end++;
+        }
+        return res;
+    }
+}
+
+NumberOfDiscIntersections
+class Solution {
+    public int solution(int[] A) {
+        long[] lower=new long[A.length];
+        long[] upper=new long[A.length];
+        for(int i=0;i<A.length;i++){
+            lower[i]=i-(long)A[i];
+            upper[i]=i+(long)A[i];
+        }
+        Arrays.sort(lower); Arrays.sort(upper);
+
+        int intersection=0;
+        for(int l=0,r=0;r<A.length;r++){
+            while(l<A.length&&lower[l]<=upper[r]){
+                intersection+=l-r;
+                l++;
+            }
+            if(intersection>10000000) return -1; 
+        }
+        return intersection;
+    }
+}
+
+

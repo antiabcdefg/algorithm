@@ -1,0 +1,672 @@
+int Integer.bitCount();           // 统计 1 的数量
+int Integer.highestOneBit();      // 获得最高位
+String Integer.toBinaryString(int i);     // 转换为二进制表示的字符串
+Integer.parseInt(str,2);    //转换为十进制整数
+
+1.交换律：swap
+x ^= y
+y ^= x
+x ^= y
+2.结合律：(a^b)^c == a^(b^c)
+3.自反性：x^x = 0，x^0 = x，x^1 = ~x
+x^y^y = x^0 = x
+(x^y)^x = (x^x)^y = 0^y = y
+x^y=z -> x^z=y与y^z=x
+
+
+^ 相同则为0, 不同则为1
+<< 高位丢弃, 低位补0
+>> 对无符号数, 高位补0. 对于有符号数, 高位补符号位
+
+x|1 加1
+x^1 偶数变奇数, 奇数变偶数
+~x+1  正数变成负数，负数变成正数
+x^y ==0  是否相等
+odd n&1==1  even n&1==0
+
+删除最后一位的1  x&(x-1)  11110100 -> 11110000
+得到最后一位的1  x&(-x)   11110100 -> 00000100
+
+i+1位 置1  x |=1<<i
+i+1位 置0  x &= ~(1<<i)  /   x -= (1<<i);
+取出i+1位  x & (1<<i)
+
+统计二进制中1个数
+cnt = 0
+while(x != 0){
+  cnt++;
+  x &= x-1;
+}
+
+统计二进制中最多连续1个数
+cnt = 0
+while(x != 0){
+  cnt++;
+  x &= x<<1;
+}
+
+swap 高8bit和低8bit
+x = (x >> 8) | (x << 8);
+
+集合中不能有两个相邻的元素
+if((mask>>1) & mask) continue;
+
+-1的补码是 11111111 11111111 11111111 11111111
+x&(-1)=x
+
+
+1000瓶中999瓶水1瓶毒药。任何喝下毒药的生物都会在一星期之后死亡。现在，你只有一星期的时间，最少几只老鼠检验出哪个瓶子里有毒药？
+10只=2^10=1024>1000，瓶子编号成二进制，检测出10位中哪些位是1，分别让每只老鼠喝掉每位中是1的瓶子，死了说明那一位是1，没死说明是0，进行编码二进制转十进制即可得到。
+2星期，1000瓶，最少7只。
+7=3^7=2187>1000，瓶子编号成三进制，第一周检测出7位中哪些位是2，分别让每只老鼠喝掉每位中是2的瓶子，死了说明那一位是2，没死说明是不是2，第二周检测出7位中哪些位是1，分别让每只老鼠喝掉除了死老鼠确定的2，1的瓶子，死了说明那一位是1，没死说明是0，进行编码三进制转十进制即可得到。
+
+n 只小白鼠 t 周可以从 (t+1)^n 个瓶子中检验出毒药来。
+
+
+
+面试题 16.01. 交换数字
+class Solution {
+    public int[] swapNumbers(int[] numbers) {
+        numbers[0] ^= numbers[1];
+        numbers[1] ^= numbers[0];
+        numbers[0] ^= numbers[1];
+        return numbers;
+    }
+}
+
+class Solution {
+    public int[] swapNumbers(int[] numbers) {
+        numbers[0] += numbers[1];
+        numbers[1] = numbers[0] - numbers[1];
+        numbers[0] -= numbers[1];
+        return numbers;
+    }
+}
+
+
+136. 只出现一次的数字  一个一次，其余两次
+//O(n) O(1)
+//1^2^3^4^5^1^2^3^4 = (1^1)^(2^2)^(3^3)^(4^4)^5= 0^0^0^0^5 = 5
+class Solution {
+    public int singleNumber(int[] nums) {
+        int res=0;
+        for(int num:nums) res^=num;
+        return res;
+    }
+}
+
+//O(n) O(n)
+class Solution {
+    public int singleNumber(int[] nums) {
+        Set<Integer> set=new HashSet<>();
+        for(int i:nums){
+            if(!set.contains(i)) set.add(i);
+            else set.remove(i);
+        }
+        Iterator<Integer> it=set.iterator();
+        if(it.hasNext()) return it.next();
+        return -1;
+    }
+}
+
+//有序 O(logn) O(1)
+class Solution {
+    public int singleNonDuplicate(int[] nums) {
+        int l=0,r=nums.length-1;
+        while(l<r){
+            int m=l+((r-l)>>1);
+            m=(m&1)==0?m:m-1;
+            if(nums[m]==nums[m+1]) l=m+2;
+            else r=m;
+        }
+        return nums[l];
+    }
+}
+
+137. 只出现一次的数字 II  一个一次，其余三次
+class Solution {
+    public int singleNumber(int[] nums) {
+        int res=0;
+        for(int i=0;i<32;i++){
+            int cnt=0;
+            for(int num:nums) cnt+=(num>>>i)&1;
+            res|=(cnt%3)<<i;
+        }
+        return res;
+    }
+}
+
+//https://leetcode-cn.com/problems/single-number-ii/solution/li-yong-qia-nuo-tu-sheng-cheng-zhuang-tai-zhuan-yi/
+class Solution {
+    public int singleNumber(int[] nums) {
+        int y=0,x=0;
+        for(int num:nums){
+            y=~x&(y^num);
+            x=~y&(x^num);
+        }
+        return y;//第二个状态为01, x为0 y为1, 1就是num
+    }
+}
+
+260. 只出现一次的数字 III  两个一次，其余两次
+class Solution {
+    public int[] singleNumbers(int[] nums) {
+        int bitmask=0;
+        for(int num:nums) bitmask^=num;
+
+        int diff=bitmask&(-bitmask);
+        int a=0;
+        for(int num:nums) if((num&diff)!=0) a^=num;//利用最后一位1区分两个数
+        return new int[]{a, a^bitmask};
+    }
+}
+
+面试题 17.19. 消失的两个数字
+class Solution {
+    public int[] missingTwo(int[] nums) {
+        int res=0,n=nums.length;
+        for(int i=1;i<=n+2;i++) res^=i;
+        for(int x: nums) res^=x;
+
+        int a=0;
+        int diff=res&-res;
+        for(int i=1;i<=n+2;i++)
+            if((diff&i)!=0) a^=i;
+        for(int x: nums)
+            if((diff&x)!=0) a^=x;
+        return new int[]{a,a^res};
+    }
+}
+
+class Solution {
+    public int[] missingTwo(int[] nums) {
+        int n=nums.length+2;
+        int sum=0;
+        for(int x:nums) sum+=x;
+
+        int sumTwo=n*(n+1)/2-sum,limits=sumTwo/2;
+        sum=0;
+        for(int x:nums) if(x<=limits) sum+=x; // 两个数不相同那么一个大于，一个小于
+        int a=limits*(limits+1)/2-sum;
+        return new int[]{a,sumTwo-a};
+    }
+}
+
+//数组
+645. 错误的集合
+
+389. 找不同
+class Solution {
+    public char findTheDifference(String s, String t) {
+        s=s.concat(t);
+        char res=0;
+        for(int i=0;i<s.length();i++){
+            res^=s.charAt(i);
+        }
+        return res;
+    }
+}
+
+class Solution {
+    public char findTheDifference(String s, String t) {
+        int cnts[]=new int[26];
+        for(int i=0;i<s.length();i++) cnts[s.charAt(i)-'a']++;
+        for(int i=0;i<t.length();i++){
+            if(--cnts[t.charAt(i)-'a']<0) return t.charAt(i);
+        }
+        return ' ';
+    }
+}
+
+class Solution {
+    public char findTheDifference(String s, String t) {
+        int dis=0;
+        for(int i=0;i<s.length()||i<t.length();i++){
+            if(i<s.length()) dis-=s.charAt(i);
+            if(i<t.length()) dis+=t.charAt(i);
+        }
+        return (char)dis;
+    }
+}
+
+class Solution {
+    public char findTheDifference(String s, String t) {
+        Set<Character> set=new HashSet<>();
+        s=s.concat(t);
+        for(int i=0;i<s.length();i++){
+            if(!set.add(s.charAt(i))) set.remove(s.charAt(i));
+        }
+        return (char)(set.toArray()[0]);
+    }
+}
+
+868. 二进制间距
+class Solution {
+    public int binaryGap(int n) {
+        int res=0;
+        int last=-1;
+        for(int i=0;i<32;i++){
+            if(((n>>i)&1)==0) continue;
+            if(last!=-1) res=Math.max(res,i-last);
+            last=i;
+        }
+        return res;
+    }
+}
+
+318. 最大单词长度乘积
+class Solution {
+    public int maxProduct(String[] words) {
+        int n=words.length;
+        int[] dic=new int[n];
+        for(int i=0;i<n;i++){
+            for(char c:words[i].toCharArray()) dic[i]|=1<<(c-'a');
+        }
+
+        int res=0;
+        for(int i=0;i<n-1;i++){
+            for(int j=i+1;j<n;j++){
+                if((dic[i]&dic[j])==0) res=Math.max(res,words[i].length()*words[j].length());
+            }
+        }
+        return res;
+    }
+}
+
+面试题 01.01. 判定字符是否唯一
+//O(n) O(1)
+class Solution {
+    public boolean isUnique(String str) {
+        int mask=0;
+        for(char c:str.toCharArray()){
+            if((mask & (1<<(c-'a')))!=0) return false;
+            mask |= 1<<(c-'a');
+        }
+        return true;
+    }
+}
+
+//O(nlogn) O(1)
+class Solution {
+    public boolean isUnique(String str) {
+        char[] chArray=str.toCharArray();
+        Arrays.sort(chArray);//O(nlogn)
+
+        for(int i=1;i<chArray.length;i++) {
+            if(chArray[i]==chArray[i-1]) return false;
+        }
+        return true;
+    }
+}
+
+//O(n) O(n)
+class Solution {
+    public boolean isUnique(String str) {
+        int MAX_CHAR=256;
+        if (str.length()>MAX_CHAR) return false;
+        boolean[] chars=new boolean[MAX_CHAR];
+
+        for(int i=0;i<str.length();i++){
+            int index=(int)str.charAt(i);
+            if(chars[index]) return false;
+            chars[index]=true;
+        }
+        return true;
+    }
+}
+
+快速幂
+//求 m^k mod p, 时间复杂度O(logk)
+int qmi(int m, int k, int p){
+    int res = 1 % p, cur = m;
+    while(k>0){
+        if((k&1)==1) res = res * cur % p;
+        k >>= 1;
+        cur = cur * cur % p;
+    }
+    return res;
+}
+
+50. Pow(x, n)
+//3^1101 = 3^0001 * 3^0100 * 3^1000
+//为什么可以直接拿负数计算: 补码运算，当/2除到0时停止
+class Solution {
+    public double myPow(double x, int n) {
+        if(x==0) return 0;
+        double res=1.0;
+        int i=n;
+        while(i!=0){
+            if((i&1)==1) res*=x;
+            i/=2;//i可能为负数不能>>
+            x*=x;
+        }
+        return n<0?1/res:res;
+    }
+}
+
+//Divide-and-conquer
+class Solution {
+    public double myPow(double x, int n) {
+        if(n==0) return 1;
+        double half=myPow(x,n/2);
+        if((n&1)==0) return half*half;
+        else if(n<0) return half*half/x;
+        else return half*half*x;
+    }
+}
+
+461. 汉明距离/面试题 05.06. 整数转换
+class Solution {
+    public int hammingDistance(int x, int y) {
+        int xor=x^y,cnt=0;
+        while(xor!=0){
+            cnt+=xor&1;
+            xor=xor>>1;
+        }
+        return cnt;
+    }
+}
+
+Brian W. Kernighan算法
+class Solution {
+    public int hammingDistance(int x, int y) {
+        int xor=x^y,cnt=0;
+        while(xor!=0){
+            xor&=xor-1;
+            cnt++;
+        }
+        return cnt;
+    }
+}
+
+201. 数字范围按位与
+class Solution {
+    public int rangeBitwiseAnd(int m, int n) {
+        int cnt=0;
+        while(m!=n){
+            m>>=1;n>>=1;
+            cnt++;
+        }
+        return m<<cnt;
+    }
+}
+
+
+
+
+190. 颠倒二进制位
+public class Solution {
+    public int reverseBits(int n) {
+        int res=0;
+        for(int i=0;i<32;i++){
+            res<<=1;
+            res+=n&1;
+            n>>=1;
+        }
+        return res;
+    }
+}
+
+面试题 05.07. 配对交换
+//0x55555555 = 0b0101_0101_0101_0101_0101_0101_0101_0101
+//0xaaaaaaaa = 0b1010_1010_1010_1010_1010_1010_1010_1010
+class Solution {
+    public int exchangeBits(int num) {
+        int even = (num & 0xaaaaaaaa) >>> 1; // >>> 无符号右移，高位补0
+        int odd = (num & 0x55555555) << 1;
+        return even | odd;
+    }
+}
+
+面试题 05.01. 插入
+class Solution {
+    public int insertBits(int N, int M, int i, int j) {
+        for(int k=i;k<=j;k++) {
+            if((N&(1<<k))>0) N&=~(1<<k);
+        }
+        return N|(M<<i);
+    }
+}
+
+338. 比特位计数
+class Solution {
+    public int[] countBits(int num) {
+        int[] res=new int[num+1];
+        for(int i=1;i<=num;i++){
+            res[i]=(i&1)==1?res[i/2]+1:res[i/2];
+        }
+        return res;
+    }
+}
+
+class Solution {
+    public int[] countBits(int num) {
+        int[] res=new int[num+1];
+        for(int i=1;i<=num;i++){
+            res[i]=res[i&(i-1)]+1;
+        }
+        return res;
+    }
+}
+
+231. 2的幂
+class Solution {
+    public boolean isPowerOfTwo(int n) {
+        return n>0 && (n&(n-1))==0;
+    }
+}
+
+342. 4的幂
+class Solution {
+    public boolean isPowerOfFour(int n) {
+        return n>0 && (n&(n-1))==0 && (n&0b01010101010101010101010101010101)!=0;
+    }
+}
+
+693. 交替位二进制数
+class Solution {
+    public boolean hasAlternatingBits(int n) {
+        int x=n^(n>>1);
+        return (x&(x+1))==0;
+    }
+}
+
+476. 数字的补数/1009. 十进制整数的反码
+class Solution {
+    public int findComplement(int num) {
+        if(num==0) return 1;
+        int mask=1<<30;
+        while((mask&num)==0) mask>>>=1;
+
+        mask=(mask<<1)-1;//后面都变1
+        return mask^num;
+    }
+}
+
+//10000000 扩展成 11111111
+public int findComplement(int num) {
+    int mask = num;
+    mask |= mask >> 1;
+    mask |= mask >> 2;
+    mask |= mask >> 4;
+    mask |= mask >> 8;
+    mask |= mask >> 16;
+    return (mask ^ num);
+}
+
+找出<=N的最大的2的幂,16位
+int findN(int n){
+    n |= n >> 1;
+    n |= n >> 2;
+    n |= n >> 4;
+    n |= n >> 8;
+    return (n + 1) >> 1;
+}
+
+371. 两整数之和
+class Solution {
+    public int getSum(int a, int b) {
+        return b==0?a:getSum(a^b,(a&b)<<1);
+    }
+}
+
+338. 比特位计数
+class Solution {
+    public int[] countBits(int num) {
+        int[] dp=new int[num+1];
+        for(int i=1;i<=num;i++){
+            dp[i]=dp[i&(i-1)]+1;//删除最后一位1的数+1
+        }
+        return dp;
+    }
+}
+
+1680. 连接连续二进制数字
+class Solution {
+    public int concatenatedBinary(int n) {
+        int MOD=(int)(1e9+7);
+        long res=0;
+        for(int i=1;i<=n;i++){
+            res=(res<<get_bit(i))%MOD+i;
+        }
+        return (int)(res%MOD);
+    }
+    public int get_bit(int x){
+        int res=0;
+        while(x>0){
+            x>>=1;
+            res++;
+        }
+        return res;
+    }
+}
+
+面试题 05.03. 翻转数位
+class Solution {
+    public int reverseBits(int num) {
+        int l=0,r=0,res=0;
+        for(int i=0;i<32;i++){
+            if((num&1)>0) r++;
+            else{
+                l=r+1;
+                r=0;
+            }
+            res=Math.max(res,l+r);
+            num>>=1;
+        }
+        return res;
+    }
+}
+
+面试题 05.04. 下一个数
+class Solution {
+    public int[] findClosedNumbers(int num) {
+        int max = nextNum(num);
+        int min = ~nextNum(~num);
+        return new int[]{max > 0 ? max : -1, min > 0 ? min : -1};
+    }
+    int nextNum(long num) {
+        long lastOne = num & -num;
+        long near = lastOne + num;
+        //将最右边连续值为1的部分转移至低位并减去多余一位，或运算得出结果
+        return (int)((num & ~near)/lastOne >> 1 | near);
+    }
+}
+
+89. 格雷编码
+class Solution {
+    public List<Integer> grayCode(int n) {
+        List<Integer> res=new ArrayList<>();
+        for(int i=0;i<(1<<n);i++){
+            res.add(i^(i>>1));
+        }
+        return res;
+    }
+}
+
+//镜像对称
+class Solution {
+    public List<Integer> grayCode(int n) {
+        List<Integer> res=new ArrayList<Integer>() {{ add(0); }};
+        for(int i=0;i<n;i++){
+            for(int j=(1<<i)-1;j>=0;j--){
+                res.add(res.get(j)|(1<<i));
+            }
+        }
+        return res;
+    }
+}
+
+class Solution {
+    List<Integer> res=new ArrayList<>();
+    public List<Integer> grayCode(int n) {
+        if(n==0) return Arrays.asList(0);
+        backtrack(n,0,0,0);
+        return res;
+    }
+    public void backtrack(int n,int sum,int count,int length){
+        if(length==n){
+            res.add(sum);
+            return;
+        }
+        if((count&1)==0){
+            backtrack(n,sum*2,count,length+1);
+            backtrack(n,sum*2+1,count+1,length+1);
+        }else{
+            backtrack(n,sum*2+1,count+1,length+1);
+            backtrack(n,sum*2,count,length+1);
+        }
+    }
+}
+
+1611. 使整数变为 0 的最少操作次数
+class Solution {
+    public int minimumOneBitOperations(int n) {
+        int res = 0;
+        while(n != 0){
+            res ^= n;
+            n >>= 1;
+        }
+        return res;
+    }
+}
+
+//Backtrack
+78. 子集subset
+class Solution {
+    public List<List<Integer>> subsets(int[] nums) {
+        int len=1<<nums.length;//3位数8个状态
+        List<List<Integer>> res=new ArrayList<>(len);
+        for(int i=0;i<len;i++){
+            List<Integer> list=new ArrayList<>();
+            for(int j=0;j<nums.length;j++){
+                if(((i>>j)&1)==1) list.add(nums[j]);//判断j位是否为1
+            }
+            res.add(list);
+        }
+        return res;
+    }
+}
+
+//Trie tree
+421. 数组中两个数的最大异或值
+class Solution {
+    public int findMaximumXOR(int[] nums) {
+        int res=0;
+        int mask=0;
+        for(int i=30;i>=0;i--){
+            mask|=1<<i;
+            int cur=res|(1<<i);
+            Set<Integer> set=new HashSet<>();
+            for(int num:nums){
+                int prefix=num&mask;
+                if(set.contains(prefix^cur)){//如果a^max=b -> a^b=max, 则存在一个数前缀和当前数前缀异或得到贪心最大值cur
+                    res=cur;
+                    break;
+                }else set.add(prefix);
+            }
+        }
+        return res;
+    }
+}
+
